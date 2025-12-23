@@ -252,13 +252,14 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
             </div>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
 
+
             <input
               type="url"
               name="background_image"
               value={imageFile ? "" : formData.background_image}
               onChange={handleInputChange}
               className="mt-3 w-full px-3 py-2 border border-gray-300 text-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Or paste image URL here"
+              placeholder="Or paste images URL here"
             />
           </div>
 
