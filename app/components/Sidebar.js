@@ -49,7 +49,7 @@ export default function Sidebar({ open, setOpen }) {
             </span>
           )}
           <button onClick={() => setOpen((p) => !p)}>
-            <FaBars />
+            <FaBars className="text-gray-500"/>
           </button>
         </div>
 

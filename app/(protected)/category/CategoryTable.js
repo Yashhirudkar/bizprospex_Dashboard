@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import {
   FaEllipsisV,
   FaEdit,
@@ -10,7 +12,10 @@ import {
   FaEyeSlash,
   FaFilter
 } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import EditCategoryModal from "./EditCategoryModal";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const getStatusBadge = (isActive) => (
   <span className={`px-3 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -37,15 +42,72 @@ export default function CategoryTable({
   handleSort,
   handlePageChange,
   deleteCategory,
-  onCategoryUpdate // Add this prop for refreshing the list
+  onCategoryUpdate,
 }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [seoStatuses, setSeoStatuses] = useState({});
+  const router = useRouter();
 
+  /* ===============================
+     FETCH SEO STATUSES FOR ALL CATEGORIES
+  ================================ */
+  useEffect(() => {
+    const fetchSeoStatuses = async () => {
+      const statuses = {};
+      for (const cat of categories) {
+        try {
+          const res = await axios.get(
+            `${API_BASE}/admin/seo/entity`,
+            {
+              params: {
+                entity_type: "category",
+                entity_id: cat.category_id,
+              },
+              withCredentials: true,
+            }
+          );
+          if (res.data.data) {
+            const seo = res.data.data;
+            statuses[cat.category_id] = {
+              seo_title: seo.seo_title || "",
+              seo_description: seo.seo_description || "",
+              slug: seo.slug || "",
+            };
+          } else {
+            statuses[cat.category_id] = {
+              seo_title: "",
+              seo_description: "",
+              slug: "",
+            };
+          }
+        } catch (err) {
+          statuses[cat.category_id] = {
+            seo_title: "",
+            seo_description: "",
+            slug: "",
+          };
+        }
+      }
+      setSeoStatuses(statuses);
+    };
+
+    if (categories.length > 0) {
+      fetchSeoStatuses();
+    }
+  }, [categories]);
+
+  /* ===============================
+     HANDLERS
+  ================================ */
   const handleEditClick = (category) => {
     setSelectedCategory(category);
     setIsEditModalOpen(true);
     setOpenMenu(null);
+  };
+
+  const handleSeoClick = (category) => {
+    router.push(`/category/seo?category_id=${category.category_id}`);
   };
 
   const handleEditSuccess = () => {
@@ -54,10 +116,11 @@ export default function CategoryTable({
     if (onCategoryUpdate) onCategoryUpdate();
   };
 
+
   return (
     <>
       {/* Categories Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[57vh] overflow-y-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -167,45 +230,129 @@ export default function CategoryTable({
                     }
                     className="p-2 hover:bg-gray-100 rounded-lg transition"
                   >
-                    <FaEllipsisV className="h-5 w-5 text-gray-500" />
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full 
+                bg-gray-100 border border-blue-200 
+                hover:bg-blue-200 hover:border-blue-300
+                cursor-pointer transition">
+                  <FaEllipsisV className="h-4 w-4 text-gray-600" />
+                </div>
+
+
                   </button>
 
-                  {openMenu === cat.category_id && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-20"
-                        onClick={() => setOpenMenu(null)}
-                      />
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border z-30">
-                        <button
-                          className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
-                          onClick={() => handleEditClick(cat)}
-                        >
-                          <FaEdit className="text-blue-600" /> Edit Category
-                        </button>
-                        <button
-                          className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                          onClick={async () => {
-                              const ok = confirm(`Are you sure you want to delete ${cat.name}?`);
-                              if (!ok) return;
+               {openMenu === cat.category_id && (
+  <>
+    {/* Overlay (click outside to close) */}
+    <div
+      className="fixed inset-0 z-20"
+      onClick={() => setOpenMenu(null)}
+    />
 
-                              const result = await deleteCategory(cat.category_id);
+    {/* Horizontal Icon Menu */}
+   <div className="absolute right-18 top-3 bg-white rounded-xl shadow-lg border border-blue-200  z-30 px-4 py-3 mr-[32px]">
+  <div className="flex items-center gap-4">
 
-                              if (result.success) {
-                                alert("Category deleted successfully");
-                              } else {
-                                alert(result.error || "Failed to delete category");
-                              }
+    {/* EDIT */}
+    <div className="relative group">
+      <button
+        onClick={() => {
+          handleEditClick(cat);
+          setOpenMenu(null);
+        }}
+        className="
+          w-10 h-10 flex items-center justify-center
+          rounded-full
+          bg-blue-50 border border-blue-200
+          text-blue-600
+          hover:bg-blue-100 hover:scale-110
+          transition
+        "
+      >
+        <FaEdit size={16} />
+      </button>
 
-                              setOpenMenu(null);
-                            }}
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2
+        whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+        opacity-0 group-hover:opacity-100 transition">
+        Edit
+      </span>
+    </div>
 
-                        >
-                          <FaTrash /> Delete Category
-                        </button>
-                      </div>
-                    </>
-                  )}
+    {/* SEO */}
+    <div className="relative group">
+      <button
+        onClick={() => {
+          handleSeoClick(cat);
+          setOpenMenu(null);
+        }}
+        className="
+          w-10 h-10 flex items-center justify-center
+          rounded-full
+          bg-green-50 border border-green-200
+          text-green-600
+          hover:bg-green-100 hover:scale-110
+          transition
+        "
+      >
+        <FaSearch size={16} />
+        {seoStatuses[cat.category_id] && (
+          !seoStatuses[cat.category_id].seo_title ||
+          !seoStatuses[cat.category_id].seo_description ||
+          !seoStatuses[cat.category_id].slug
+        ) && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+        )}
+      </button>
+
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2
+        whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+        opacity-0 group-hover:opacity-100 transition">
+        SEO
+      </span>
+    </div>
+
+    {/* DELETE */}
+    <div className="relative group">
+      <button
+        onClick={async () => {
+          const ok = confirm(`Are you sure you want to delete ${cat.name}?`);
+          if (!ok) return;
+
+          const result = await deleteCategory(cat.category_id);
+
+          alert(
+            result.success
+              ? "Category deleted successfully"
+              : result.error || "Failed to delete category"
+          );
+
+          setOpenMenu(null);
+        }}
+        className="
+          w-10 h-10 flex items-center justify-center
+          rounded-full
+          bg-red-50 border border-red-200
+          text-red-600
+          hover:bg-red-100 hover:scale-110
+          transition
+        "
+      >
+        <FaTrash size={16} />
+      </button>
+
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2
+        whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+        opacity-0 group-hover:opacity-100 transition">
+        Delete
+      </span>
+    </div>
+
+  </div>
+</div>
+
+  </>
+)}
+
                 </td>
               </tr>
             ))}
@@ -243,7 +390,7 @@ export default function CategoryTable({
                 disabled={pagination.page === 1}
                 className={`px-3 py-1 rounded-lg ${pagination.page === 1
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white border hover:bg-gray-50"
+                    : "bg-white border text-gray-500 hover:bg-gray-50"
                   }`}
               >
                 Previous
@@ -278,7 +425,7 @@ export default function CategoryTable({
                 disabled={pagination.page === pagination.totalPages}
                 className={`px-3 py-1 rounded-lg ${pagination.page === pagination.totalPages
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white border hover:bg-gray-50"
+                    : "bg-white border text-gray-500 hover:bg-gray-50"
                   }`}
               >
                 Next

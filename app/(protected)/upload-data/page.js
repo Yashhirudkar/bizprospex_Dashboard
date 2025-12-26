@@ -55,7 +55,7 @@ export default function ProductUploadPage() {
   };
 
   return (
-    <div className="flex flex-col h-[90vh] p-3 md:p-6 gap-4 bg-white">
+    <div className="flex flex-col h-[87vh] p-3 md:p-6 gap-4 bg-white">
       {/* HEADER */}
       <div className="flex justify-between items-center flex-wrap">
         <h1 className="text-2xl md:text-3xl font-semibold text-blue-600">
@@ -72,7 +72,7 @@ export default function ProductUploadPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by product name..."
-            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full pl-9 pr-3 py-2 text-gray-500 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 outline-none"
           />
         </div>
       </div>
@@ -183,13 +183,13 @@ export default function ProductUploadPage() {
                   className={`px-3 py-1 rounded border ${
                     page === 1
                       ? "bg-gray-100 text-gray-600"
-                      : "hover:bg-gray-100"
+                      : "hover:bg-gray-100 text-gray-500"
                   }`}
                 >
                   Prev
                 </button>
 
-                <span className="px-3 py-1 font-medium">
+                <span className="px-3 py-1 text-gray-500 font-medium">
                   {page} / {totalPages}
                 </span>
 
@@ -198,8 +198,8 @@ export default function ProductUploadPage() {
                   onClick={() => setPage(page + 1)}
                   className={`px-3 py-1 rounded border ${
                     page === totalPages
-                      ? "bg-gray-100 text-gray-400"
-                      : "hover:bg-gray-100"
+                      ? "text-gray-400"
+                      : "hover:bg-gray-100 text-gray-500"
                   }`}
                 >
                   Next

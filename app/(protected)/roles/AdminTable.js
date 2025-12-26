@@ -112,7 +112,7 @@ export default function AdminTable({
                             {admin.email.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium">
+                            <p className="font-medium text-gray-500">
                               {admin.name ||
                                 admin.email.split("@")[0]}
                             </p>
@@ -142,7 +142,7 @@ export default function AdminTable({
                       </td>
 
                       {/* CREATED */}
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-gray-500">
                         <p className="text-sm">
                           {new Date(
                             admin.createdAt
