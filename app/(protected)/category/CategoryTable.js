@@ -14,8 +14,7 @@ import {
 } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
 import EditCategoryModal from "./EditCategoryModal";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { apiUrl } from "../../../constant/api";
 
 const getStatusBadge = (isActive) => (
   <span className={`px-3 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

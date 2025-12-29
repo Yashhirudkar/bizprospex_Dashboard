@@ -128,7 +128,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
         form.append("background_image_url", formData.background_image);
       }
 
-      const response = await fetch("http://localhost:5000/api/categories/admin/create", {
+      const response = await fetch(`${apiUrl}/categories/admin/create`, {
         method: "POST",
         body: form, // Fetch automatically sets multipart/form-data boundary
       });

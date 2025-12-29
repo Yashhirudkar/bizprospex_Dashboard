@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "../../../constant/api";
 
 export function useCategories() {
   const [categories, setCategories] = useState([]);
@@ -19,7 +20,7 @@ export function useCategories() {
   const fetchCategories = async (page = 1, limit = 10) => {
     setLoading(true);
     try {
-      let url = `http://localhost:5000/api/categories/admin/list?page=${page}&limit=${limit}`;
+      let url = `${apiUrl}/categories/admin/list?page=${page}&limit=${limit}`;
 
       // Add filters if applied
       if (searchTerm) {

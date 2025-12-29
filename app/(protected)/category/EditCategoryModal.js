@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
+import { apiUrl } from "../../../constant/api";
 
 export default function EditCategoryModal({ isOpen, onClose, onSuccess, category }) {
   const [formData, setFormData] = useState({
@@ -156,7 +157,7 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
         form.append("background_image_url", formData.background_image);
       }
 
-      const response = await fetch(`http://localhost:5000/api/categories/admin/${category.category_id}`, {
+      const response = await fetch(`${apiUrl}/categories/admin/${category.category_id}`, {
         method: "PUT",
         body: form, // Fetch automatically sets multipart/form-data boundary
       });

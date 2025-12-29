@@ -3,22 +3,20 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { 
-  Save, 
-  Tag, 
-  FileText, 
-  Link, 
-  Search, 
-  Image, 
+import {
+  Save,
+  Tag,
+  FileText,
+  Link,
+  Search,
+  Image,
   Code,
   Globe,
   Eye,
   EyeOff,
   ChevronDown
 } from "lucide-react";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { apiUrl } from "../../../constant/api";
 
 export default function CategorySeoPage() {
   const searchParams = useSearchParams();
@@ -67,7 +65,7 @@ export default function CategorySeoPage() {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(
-          `${API_BASE}/categories/admin/list`,
+          `${apiUrl}/categories/admin/list`,
           { withCredentials: true }
         );
         setCategories(res.data.data || []);
@@ -91,7 +89,7 @@ export default function CategorySeoPage() {
         setSuccess("");
 
         const res = await axios.get(
-          `${API_BASE}/admin/seo/entity`,
+          `${apiUrl}/admin/seo/entity`,
           {
             params: {
               entity_type: "category",
@@ -158,14 +156,14 @@ export default function CategorySeoPage() {
 
       if (seoId) {
         await axios.put(
-          `${API_BASE}/admin/seo/${seoId}`,
+          `${apiUrl}/admin/seo/${seoId}`,
           payload,
           { withCredentials: true }
         );
         setSuccess("✅ SEO updated successfully!");
       } else {
         await axios.post(
-          `${API_BASE}/admin/seo`,
+          `${apiUrl}/admin/seo`,
           payload,
           { withCredentials: true }
         );
