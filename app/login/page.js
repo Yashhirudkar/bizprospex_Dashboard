@@ -32,7 +32,7 @@ export default function Login() {
       setLoading(true);
 
       const res = await axios.post(
-        `${apiUrl}/request-otp-admin`,
+        `${apiUrl}/admin/request-otp-admin`,
         { email }
       );
 

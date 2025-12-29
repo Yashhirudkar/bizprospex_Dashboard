@@ -92,7 +92,7 @@ export function useCategories() {
 
   const deleteCategory = async (categoryId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/categories/admin/${categoryId}`, {
+      const response = await fetch(`${apiUrl}/categories/admin/${categoryId}`, {
         method: 'DELETE',
       });
 
