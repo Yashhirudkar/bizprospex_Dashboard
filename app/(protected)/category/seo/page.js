@@ -16,7 +16,7 @@ import {
   EyeOff,
   ChevronDown
 } from "lucide-react";
-import { apiUrl } from "../../../constant/api";
+import { apiUrl } from "../../../../constant/api";
 
 export default function CategorySeoPage() {
   const searchParams = useSearchParams();
