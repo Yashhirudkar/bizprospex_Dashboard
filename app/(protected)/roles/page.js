@@ -33,7 +33,7 @@ export default function RolesPage() {
   const fetchAdmins = async () => {
     setLoadingAdmins(true);
     try {
-      const res = await fetch(`${apiUrl}/admins`, {
+      const res = await fetch(`${apiUrl}/admin/admins`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -59,7 +59,7 @@ export default function RolesPage() {
 
   /* ---------------- CREATE USER IF NEEDED ---------------- */
   const createUserIfNeeded = async (email) => {
-    const res = await fetch(`${apiUrl}/create-user`, {
+    const res = await fetch(`${apiUrl}/admin/create-user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -78,7 +78,7 @@ export default function RolesPage() {
     setLoading(true);
 
     try {
-      let res = await fetch(`${apiUrl}/set-role`, {
+      let res = await fetch(`${apiUrl}/admin/set-role`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -93,7 +93,7 @@ export default function RolesPage() {
         if (!created.success)
           return showToast(created.message || "Failed to create user", "error");
 
-        res = await fetch(`${apiUrl}/set-role`, {
+        res = await fetch(`${apiUrl}/admin/set-role`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -143,7 +143,7 @@ export default function RolesPage() {
 
     try {
       const res = await fetch(
-        `${apiUrl}/remove-admin/${adminToDelete.id}`,
+        `${apiUrl}/admin/remove-admin/${adminToDelete.id}`,
         {
           method: "DELETE",
           credentials: "include",

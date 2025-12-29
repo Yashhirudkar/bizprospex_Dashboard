@@ -51,7 +51,7 @@ export default function UploadData({ productId }) {
         formData.append("productId", productId);
 
         const res = await axios.post(
-          `${apiUrl}/datastore/upload`,
+          `${apiUrl}/admin/datastore/upload`,
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -75,7 +75,7 @@ export default function UploadData({ productId }) {
         }
 
         const res = await axios.post(
-          `${apiUrl}/upload-json`,
+          `${apiUrl}/admin/upload-json`,
           { productId, data: parsed },
           { withCredentials: true }
         );

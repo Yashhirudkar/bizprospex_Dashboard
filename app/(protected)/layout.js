@@ -29,7 +29,7 @@ export default function ProtectedLayout({ children }) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch(`${apiUrl}/check-auth`, {
+        const res = await fetch(`${apiUrl}/admin/check-auth`, {
           method: "GET",
           credentials: "include",
         });
@@ -52,7 +52,7 @@ export default function ProtectedLayout({ children }) {
   // 🚪 Logout
   const handleLogout = async () => {
     try {
-      await fetch(`${apiUrl}/admin-logout`, {
+      await fetch(`${apiUrl}/admin/logout`, {
         method: "POST",
         credentials: "include",
       });

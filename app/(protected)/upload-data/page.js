@@ -35,7 +35,7 @@ export default function ProductUploadPage() {
   const fetchProducts = async (pageNum = 1, searchTerm = "") => {
     setLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/products`, {
+      const res = await axios.get(`${apiUrl}/admin/products`, {
         params: { search: searchTerm, page: pageNum, limit: 10 },
         withCredentials: true,
       });

@@ -40,7 +40,7 @@ export default function UploadedDataTable() {
     try {
       setLoading(true);
       const res = await axios.get(
-        `${apiUrl}/datastore/uploaded-data/${productId}`,
+        `${apiUrl}/admin/datastore/uploaded-data/${productId}`,
         {
           params: { page: page + 1, limit },
           withCredentials: true,

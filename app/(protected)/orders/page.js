@@ -14,7 +14,7 @@ export default function OrdersTable() {
   const fetchOrders = async (pageNumber = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/orders/all-orders`, {
+      const res = await axios.get(`${apiUrl}/admin/orders/all-orders`, {
         params: { page: pageNumber, limit: perPage },
         withCredentials: true,
       });
