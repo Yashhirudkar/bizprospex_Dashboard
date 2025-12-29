@@ -63,7 +63,7 @@ export default function Login() {
       setLoading(true);
 
       const res = await axios.post(
-        `${apiUrl}/verify-otp-admin`,
+        `${apiUrl}/admin/verify-otp-admin`,
         { email, otp },
         { withCredentials: true }
       );
