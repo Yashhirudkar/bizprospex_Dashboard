@@ -128,7 +128,7 @@ export default function DownloadSampleTable() {
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
       {/* ================= HEADER ================= */}
-      <div className="mb-8">
+      <div className="mb-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
             <Download size={28} className="text-white" />
@@ -154,8 +154,8 @@ export default function DownloadSampleTable() {
       </div>
 
       {/* ================= FILTERS ================= */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white rounded-2xl shadow-lg p-4 mb-5 border border-gray-200">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <Filter size={20} className="text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-800">
@@ -190,7 +190,7 @@ export default function DownloadSampleTable() {
                 placeholder="Search by email..."
                 value={filters.user_email}
                 onChange={(e) => handleFilterChange("user_email", e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-0"
               />
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function DownloadSampleTable() {
               type="date"
               value={filters.from_date}
               onChange={(e) => handleFilterChange("from_date", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full text-gray-400 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-0"
             />
           </div>
 
@@ -218,7 +218,7 @@ export default function DownloadSampleTable() {
               type="date"
               value={filters.to_date}
               onChange={(e) => handleFilterChange("to_date", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 text-gray-400 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-0"
             />
           </div>
         </div>
@@ -240,7 +240,7 @@ export default function DownloadSampleTable() {
 
       {/* ================= TABLE ================= */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table className="w-full">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
               <tr>
@@ -370,21 +370,25 @@ export default function DownloadSampleTable() {
                           : "-"}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      {item.sample_link ? (
-                        <a
-                          href={item.sample_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors group/link"
-                        >
-                          <span>View Sample</span>
-                          <ExternalLink size={14} className="group-hover/link:translate-x-0.5 transition-transform" />
-                        </a>
-                      ) : (
-                        <span className="text-gray-400 text-sm">No link</span>
-                      )}
-                    </td>
+                  <td className="px-6 py-4">
+                    {item.sample_link ? (
+                      <a
+                        href={item.sample_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap group/link"
+                      >
+                        <span className="text-sm">View Sample</span>
+                        <ExternalLink
+                          size={14}
+                          className="group-hover/link:translate-x-0.5 transition-transform"
+                        />
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No link</span>
+                    )}
+                  </td>
+
                   </tr>
                 ))
               )}

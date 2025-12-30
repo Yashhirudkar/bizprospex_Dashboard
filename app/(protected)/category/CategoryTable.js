@@ -10,8 +10,10 @@ import {
   FaImage,
   FaEye,
   FaEyeSlash,
-  FaFilter
+  FaFilter,
+  FaUpload,
 } from "react-icons/fa";
+import UploadSampleModal from "./UploadSampleModal";
 import { FaSearch } from "react-icons/fa";
 import EditCategoryModal from "./EditCategoryModal";
 import { apiUrl } from "../../../constant/api";
@@ -47,6 +49,14 @@ export default function CategoryTable({
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [seoStatuses, setSeoStatuses] = useState({});
   const router = useRouter();
+
+
+
+  /* ===============================
+   Upload download sample for  ALL CATEGORIES
+  ================================ */
+  const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
+const [selectedCategoryForSample, setSelectedCategoryForSample] = useState(null);
 
   /* ===============================
      FETCH SEO STATUSES FOR ALL CATEGORIES
@@ -240,116 +250,142 @@ export default function CategoryTable({
                   </button>
 
                {openMenu === cat.category_id && (
-  <>
-    {/* Overlay (click outside to close) */}
-    <div
-      className="fixed inset-0 z-20"
-      onClick={() => setOpenMenu(null)}
-    />
+<>
+  {/* Overlay (click outside to close) */}
+  <div
+    className="fixed inset-0 z-20"
+    onClick={() => setOpenMenu(null)}
+  />
 
-    {/* Horizontal Icon Menu */}
-   <div className="absolute right-18 top-3 bg-white rounded-xl shadow-lg border border-blue-200  z-30 px-4 py-3 mr-[32px]">
-  <div className="flex items-center gap-4">
+  {/* Horizontal Icon Menu */}
+  <div className="absolute right-18 top-3 bg-white rounded-xl shadow-lg border border-blue-200 z-30 px-4 py-3 mr-[32px]">
+    <div className="flex items-center gap-4">
 
-    {/* EDIT */}
-    <div className="relative group">
-      <button
-        onClick={() => {
-          handleEditClick(cat);
-          setOpenMenu(null);
-        }}
-        className="
-          w-10 h-10 flex items-center justify-center
-          rounded-full
-          bg-blue-50 border border-blue-200
-          text-blue-600
-          hover:bg-blue-100 hover:scale-110
-          transition
-        "
-      >
-        <FaEdit size={16} />
-      </button>
+      {/* EDIT */}
+      <div className="relative group">
+        <button
+          onClick={() => {
+            handleEditClick(cat);
+            setOpenMenu(null);
+          }}
+          className="
+            w-10 h-10 flex items-center justify-center
+            rounded-full
+            bg-blue-50 border border-blue-200
+            text-blue-600
+            hover:bg-blue-100 hover:scale-110
+            transition
+          "
+        >
+          <FaEdit size={16} />
+        </button>
 
-      <span className="absolute -top-8 left-1/2 -translate-x-1/2
-        whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
-        opacity-0 group-hover:opacity-100 transition">
-        Edit
-      </span>
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2
+          whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+          opacity-0 group-hover:opacity-100 transition">
+          Edit
+        </span>
+      </div>
+
+      {/* SEO */}
+      <div className="relative group">
+        <button
+          onClick={() => {
+            handleSeoClick(cat);
+            setOpenMenu(null);
+          }}
+          className="
+            w-10 h-10 flex items-center justify-center
+            rounded-full
+            bg-green-50 border border-green-200
+            text-green-600
+            hover:bg-green-100 hover:scale-110
+            transition
+          "
+        >
+          <FaSearch size={16} />
+          {seoStatuses[cat.category_id] &&
+            (!seoStatuses[cat.category_id].seo_title ||
+              !seoStatuses[cat.category_id].seo_description ||
+              !seoStatuses[cat.category_id].slug) && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" />
+            )}
+        </button>
+
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2
+          whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+          opacity-0 group-hover:opacity-100 transition">
+          SEO
+        </span>
+      </div>
+
+      {/* UPLOAD SAMPLE */}
+      <div className="relative group">
+        <button
+          onClick={() => {
+            setSelectedCategoryForSample(cat);
+            setIsSampleModalOpen(true);
+            setOpenMenu(null);
+          }}
+          className="
+            w-10 h-10 flex items-center justify-center
+            rounded-full
+            bg-purple-50 border border-purple-200
+            text-purple-600
+            hover:bg-purple-100 hover:scale-110
+            transition
+          "
+        >
+          <FaUpload size={16} />
+        </button>
+
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2
+          whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+          opacity-0 group-hover:opacity-100 transition">
+          Upload Sample
+        </span>
+      </div>
+
+      {/* DELETE */}
+      <div className="relative group">
+        <button
+          onClick={async () => {
+            const ok = confirm(`Are you sure you want to delete ${cat.name}?`);
+            if (!ok) return;
+
+            const result = await deleteCategory(cat.category_id);
+
+            alert(
+              result.success
+                ? "Category deleted successfully"
+                : result.error || "Failed to delete category"
+            );
+
+            setOpenMenu(null);
+          }}
+          className="
+            w-10 h-10 flex items-center justify-center
+            rounded-full
+            bg-red-50 border border-red-200
+            text-red-600
+            hover:bg-red-100 hover:scale-110
+            transition
+          "
+        >
+          <FaTrash size={16} />
+        </button>
+
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2
+          whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
+          opacity-0 group-hover:opacity-100 transition">
+          Delete
+        </span>
+      </div>
+
     </div>
-
-    {/* SEO */}
-    <div className="relative group">
-      <button
-        onClick={() => {
-          handleSeoClick(cat);
-          setOpenMenu(null);
-        }}
-        className="
-          w-10 h-10 flex items-center justify-center
-          rounded-full
-          bg-green-50 border border-green-200
-          text-green-600
-          hover:bg-green-100 hover:scale-110
-          transition
-        "
-      >
-        <FaSearch size={16} />
-        {seoStatuses[cat.category_id] && (
-          !seoStatuses[cat.category_id].seo_title ||
-          !seoStatuses[cat.category_id].seo_description ||
-          !seoStatuses[cat.category_id].slug
-        ) && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
-        )}
-      </button>
-
-      <span className="absolute -top-8 left-1/2 -translate-x-1/2
-        whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
-        opacity-0 group-hover:opacity-100 transition">
-        SEO
-      </span>
-    </div>
-
-    {/* DELETE */}
-    <div className="relative group">
-      <button
-        onClick={async () => {
-          const ok = confirm(`Are you sure you want to delete ${cat.name}?`);
-          if (!ok) return;
-
-          const result = await deleteCategory(cat.category_id);
-
-          alert(
-            result.success
-              ? "Category deleted successfully"
-              : result.error || "Failed to delete category"
-          );
-
-          setOpenMenu(null);
-        }}
-        className="
-          w-10 h-10 flex items-center justify-center
-          rounded-full
-          bg-red-50 border border-red-200
-          text-red-600
-          hover:bg-red-100 hover:scale-110
-          transition
-        "
-      >
-        <FaTrash size={16} />
-      </button>
-
-      <span className="absolute -top-8 left-1/2 -translate-x-1/2
-        whitespace-nowrap bg-gray-800 text-white text-xs px-2 py-1 rounded
-        opacity-0 group-hover:opacity-100 transition">
-        Delete
-      </span>
-    </div>
-
   </div>
-</div>
+</>
 
-  </>
 )}
 
                 </td>
@@ -433,6 +469,15 @@ export default function CategoryTable({
           </div>
         </div>
       )}
+
+
+            {/* Upload Sample Modal */}
+      <UploadSampleModal
+        isOpen={isSampleModalOpen}
+        onClose={() => setIsSampleModalOpen(false)}
+        category={selectedCategoryForSample}
+        onSuccess={onCategoryUpdate}
+      />
 
       {/* Edit Category Modal */}
       <EditCategoryModal
