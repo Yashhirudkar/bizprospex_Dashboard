@@ -12,9 +12,17 @@ export default function ProtectedLayout({ children }) {
 
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  // ✅ Ensure client-side rendering
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // 📱 Responsive sidebar logic
   useEffect(() => {
+    if (!isClient) return;
+
     const handleResize = () => {
       if (window.innerWidth < 768) setOpen(false);
       else setOpen(true);
@@ -23,7 +31,7 @@ export default function ProtectedLayout({ children }) {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isClient]);
 
   // 🔒 Auth check
   useEffect(() => {
@@ -63,7 +71,7 @@ export default function ProtectedLayout({ children }) {
   };
 
   // ⏳ Loading screen
-  if (loading) {
+  if (loading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="w-14 h-14 border-4 border-gray-300 border-t-black rounded-full animate-spin" />
@@ -78,10 +86,10 @@ export default function ProtectedLayout({ children }) {
 
       {/* MAIN AREA */}
       <div
-        className={`flex flex-col flex-1 transition-all duration-300`}
+        className="flex flex-col flex-1 transition-all duration-300"
         style={{
           marginLeft:
-            typeof window !== "undefined" && window.innerWidth >= 768 && open
+            isClient && window.innerWidth >= 768 && open
               ? `${SIDEBAR_WIDTH}px`
               : "0px",
         }}

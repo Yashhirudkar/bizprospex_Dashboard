@@ -1,6 +1,0 @@
-- [x] Update constant/api.js to define apiUrl as `${process.env.NEXT_PUBLIC_BASE_URL}/api`
-- [x] Update app/(protected)/category/useCategories.js: Import apiUrl and replace hardcoded URLs
-- [x] Update app/(protected)/category/EditCategoryModal.js: Import apiUrl and replace hardcoded URLs
-- [x] Update app/(protected)/category/AddCategoryModal.js: Import apiUrl and replace hardcoded URLs
-- [x] Update app/(protected)/category/CategoryTable.js: Import apiUrl and replace NEXT_PUBLIC_API_URL usage
-- [x] Update app/(protected)/category/seo/page.js: Import apiUrl and replace NEXT_PUBLIC_API_URL usage
