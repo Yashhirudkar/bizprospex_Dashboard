@@ -120,12 +120,15 @@ export default function OrdersTable() {
                               <p className="text-sm text-gray-600">
                                 ₹{item.price}
                               </p>
-                              <p className="text-xs text-gray-500">
-                                Leads:{" "}
-                                {item.meta_data?.find(
-                                  (m) => m.key === "purchase_leads"
-                                )?.value || "-"}
-                              </p>
+                             <p className="text-xs text-gray-500">
+  Leads:{" "}
+  {item.meta_data?.find(
+    (m) =>
+      m.key?.toLowerCase().includes("lead") &&
+      m.key?.toLowerCase().includes("count")
+  )?.display_value || "-"}
+</p>
+
                             </div>
                           ))
                         ) : (
