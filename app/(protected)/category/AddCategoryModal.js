@@ -1,10 +1,10 @@
 "use client";
 
+import { apiUrl } from "@/constant/api";
 import { useState, useEffect, useRef } from "react";
 import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
 
 
-const apiUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
