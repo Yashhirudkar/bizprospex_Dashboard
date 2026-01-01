@@ -77,7 +77,7 @@ export default function RoleFormDrawer({
                 disabled={Boolean(editingAdmin)}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
+                className="w-full border rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 text-gray-600"
               />
               {email && (
                 <FaCheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500" />
@@ -94,7 +94,7 @@ export default function RoleFormDrawer({
               value={role}
               onChange={(e) => setRole(e.target.value)}
               required
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-gray-600"
             >
               <option value="">Choose role</option>
               {roleOptions.map((r) => (

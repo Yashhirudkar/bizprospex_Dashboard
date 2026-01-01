@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGrip,
@@ -20,6 +20,7 @@ export default function GridMenu() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Close on outside click
   useEffect(() => {
@@ -44,10 +45,12 @@ export default function GridMenu() {
       {/* GRIP BUTTON */}
       <button
         aria-label="Apps Menu"
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className="flex items-center justify-center w-10 h-10 rounded-full
                    bg-gray-100 text-gray-600
-                   hover:bg-gray-200 hover:text-gray-900"
+                   hover:bg-gray-200 hover:text-gray-900
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <FontAwesomeIcon icon={faGrip} size="lg" />
       </button>
@@ -63,10 +66,17 @@ export default function GridMenu() {
             <MenuItem
               title="Download Sample"
               icon={faDownload}
-              onClick={() => handleNavigate("/GridMenu")}
+              active={pathname === "/GridMenu/download-sample"}
+              onClick={() => handleNavigate("/GridMenu/download-sample")}
             />
 
-            <MenuItem title="Job Analysis" icon={faBriefcase} />
+            <MenuItem
+              title="Contact Lists"
+              icon={faBriefcase}
+              active={pathname === "/GridMenu/contacts"}
+              onClick={() => handleNavigate("/GridMenu/contacts")}
+            />
+
             <MenuItem title="Dataset Assignments" icon={faDatabase} />
             <MenuItem title="20% Exhibitors list" icon={faList} />
             <MenuItem title="Orders list" icon={faShoppingCart} />
@@ -83,17 +93,21 @@ export default function GridMenu() {
 
 function MenuItem({ title, icon, active, onClick }) {
   return (
-    <div
+    <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-2 cursor-pointer
-      ${active ? "text-blue-600" : "text-gray-700"}
-      hover:text-blue-600`}
+      type="button"
+      className={`flex flex-col items-center gap-2
+        ${active ? "text-blue-600" : "text-gray-700"}
+        hover:text-blue-600 focus:outline-none`}
     >
       <div
-        className={`w-10 h-10 rounded-lg
-        flex items-center justify-center
-        ${active ? "bg-blue-50 text-blue-600" : "bg-gray-100 text-gray-600"}
-        hover:bg-blue-50`}
+        className={`w-10 h-10 rounded-lg flex items-center justify-center
+          ${
+            active
+              ? "bg-blue-50 text-blue-600"
+              : "bg-gray-100 text-gray-600"
+          }
+          hover:bg-blue-50`}
       >
         <FontAwesomeIcon icon={icon} size="sm" />
       </div>
@@ -101,6 +115,6 @@ function MenuItem({ title, icon, active, onClick }) {
       <span className="text-xs font-medium text-center">
         {title}
       </span>
-    </div>
+    </button>
   );
 }
