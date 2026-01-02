@@ -161,7 +161,7 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
          {
         method: "PUT",
         body: form, 
-        credentials : true,// Fetch automatically sets multipart/form-data boundary
+        credentials : "include",// Fetch automatically sets multipart/form-data boundary
       });
 
       const data = await response.json();
