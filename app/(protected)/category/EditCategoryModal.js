@@ -157,9 +157,11 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
         form.append("background_image_url", formData.background_image);
       }
 
-      const response = await fetch(`${apiUrl}/categories/admin/${category.category_id}`, {
+      const response = await fetch(`${apiUrl}/categories/admin/${category.category_id}`,
+         {
         method: "PUT",
-        body: form, // Fetch automatically sets multipart/form-data boundary
+        body: form, 
+        credentials : true,// Fetch automatically sets multipart/form-data boundary
       });
 
       const data = await response.json();
