@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Trash2,
 } from "lucide-react";
-import { apiUrl } from "../../../constant/api.js";
+import { apiUrl } from "@/constant/api.js";
 
 export default function ContactsList() {
   const [contacts, setContacts] = useState([]);
