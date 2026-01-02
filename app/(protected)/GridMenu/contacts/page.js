@@ -32,66 +32,78 @@ export default function ContactsList() {
     setToDate("");
     setPage(1);
   };
+const fetchContacts = async () => {
+  try {
+    const params = new URLSearchParams({
+      page,
+      limit: 20,
+      ...(formType && { form_type: formType }),
+      ...(search && { search }),
+      ...(fromDate && { from_date: fromDate }),
+      ...(toDate && { to_date: toDate }),
+    });
 
-  const fetchContacts = async () => {
-    try {
-      const params = new URLSearchParams({
-        page,
-        limit: 20,
-        ...(formType && { form_type: formType }),
-        ...(search && { search }),
-        ...(fromDate && { from_date: fromDate }),
-        ...(toDate && { to_date: toDate }),
-      });
+    const res = await fetch(
+      `${apiUrl}/v1/get-contact?${params}`,
+      {
+        method: "GET",
+        credentials: "include", // ✅ THIS IS THE FIX
+      }
+    );
 
-      const res = await fetch(
-        `${apiUrl}/v1/get-contact?${params}`
-      );
+    const data = await res.json();
+    const contactsData = data.data || [];
 
-      const data = await res.json();
-      const contactsData = data.data || [];
+    setContacts(contactsData);
+    setTotalPages(data.pagination?.totalPages || 1);
 
-      setContacts(contactsData);
-      setTotalPages(data.pagination?.totalPages || 1);
+    const formTypeMap = {};
+    contactsData.forEach((item) => {
+      if (!item.form_type) return;
+      formTypeMap[item.form_type] =
+        (formTypeMap[item.form_type] || 0) + 1;
+    });
 
-      const formTypeMap = {};
-      contactsData.forEach((item) => {
-        if (!item.form_type) return;
-        formTypeMap[item.form_type] =
-          (formTypeMap[item.form_type] || 0) + 1;
-      });
-
-      const uniqueFormTypes = Object.keys(formTypeMap).map((key) => ({
+    setFormTypes(
+      Object.keys(formTypeMap).map((key) => ({
         value: key,
         count: formTypeMap[key],
-      }));
+      }))
+    );
+  } catch (error) {
+    console.error("Failed to fetch contacts:", error);
+  }
+};
 
-      setFormTypes(uniqueFormTypes);
-    } catch (error) {
-      console.error("Failed to fetch contacts:", error);
-    }
-  };
 
   useEffect(() => {
     fetchContacts();
   }, [page, formType, search, fromDate, toDate]);
 
   /* DELETE CONTACT */
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this contact?")) return;
+ const handleDelete = async (id) => {
+  if (!confirm("Are you sure you want to delete this contact?")) return;
 
-    try {
-      const res = await fetch(
-        `${apiUrl}/v1/delete-contact/${id}`,
-        { method: "DELETE" }
-      );
+  try {
+    const res = await fetch(
+      `${apiUrl}/v1/delete-contact/${id}`,
+      {
+        method: "DELETE",
+        credentials: "include", // ✅ VERY IMPORTANT
+      }
+    );
 
-      const data = await res.json();
-      if (data.success) fetchContacts();
-    } catch (error) {
-      console.error("Delete failed:", error);
+    const data = await res.json();
+
+    if (data.success) {
+      fetchContacts();
+    } else {
+      alert(data.message || "Delete failed");
     }
-  };
+  } catch (error) {
+    console.error("Delete failed:", error);
+  }
+};
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-xl">
