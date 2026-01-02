@@ -134,6 +134,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
       const response = await fetch(`${apiUrl}/categories/admin/create`, {
         method: "POST",
         body: form, // Fetch automatically sets multipart/form-data boundary
+        credentials:"include",
       });
 
       const data = await response.json();
