@@ -20,6 +20,8 @@ import {
 const PAGE_LIMIT = 20;
 
 export default function DownloadSampleTable() {
+  // Moved inside the component
+  const [source, setSource] = useState("download"); 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,36 +43,64 @@ export default function DownloadSampleTable() {
   const fetchDownloads = useCallback(async (pageNo = 1) => {
     try {
       setLoading(true);
-      setIsFiltering(Object.values(filters).some(val => val !== ""));
+      // Determine if we are currently filtering based on input values
+      const hasActiveFilters = Object.values(filters).some(val => val !== "");
+      setIsFiltering(hasActiveFilters);
+
+      const url =
+        source === "download"
+          ? "/api/admin/Downloadsample"
+          : "/api/admin/category/sample-downloads";
 
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/Downloadsample`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}${url}`,
         {
           params: {
             page: pageNo,
             limit: PAGE_LIMIT,
-            ...filters,
+            // Only apply filters for the "download" source as per original logic
+            ...(source === "download" ? filters : {}),
           },
           withCredentials: true,
         }
       );
 
-      setData(res.data?.data?.downloads || []);
-      setTotalPages(res.data?.data?.totalPages || 1);
-      setPage(res.data?.data?.page || 1);
+      // Normalize response data structure
+      const normalizedData =
+        source === "download"
+          ? res.data?.data?.downloads || []
+          : (res.data?.data || []).map(item => ({
+              id: item.id,
+              user_name: item.user_name,
+              user_email: item.user_email,
+              product_name: item.product_name,
+              utm_source: item.Category?.name || "-",
+              utm_medium: "-",
+              utm_campaign_id: item.category_id,
+              adgroup_id: item.sample_link_id,
+              createdAt: item.createdAt,
+              sample_link: item.CategorySampleFile?.sample_link,
+            }));
+
+      setData(normalizedData);
+
+      // Normalize pagination structure
+      const pagination =
+        source === "download"
+          ? res.data?.data
+          : res.data?.pagination;
+
+      setTotalPages(pagination?.totalPages || 1);
+      setPage(pagination?.page || 1);
       setError("");
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.status === 401
-          ? "Session expired. Please login again."
-          : "Failed to load download samples"
-      );
+      setError("Failed to load download samples");
     } finally {
       setLoading(false);
       setIsFiltering(false);
     }
-  }, [filters]);
+  }, [filters, source]);
 
   /* ================= EFFECTS ================= */
   useEffect(() => {
@@ -79,6 +109,7 @@ export default function DownloadSampleTable() {
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+    setPage(1); // Reset to first page when filtering
   };
 
   const handleFilterReset = () => {
@@ -93,7 +124,7 @@ export default function DownloadSampleTable() {
     setPage(1);
   };
 
-  /* ================= LOADING & ERROR STATES ================= */
+  /* ================= UI RENDERING ================= */
   if (loading && page === 1) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center">
@@ -127,7 +158,7 @@ export default function DownloadSampleTable() {
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="mb-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
@@ -153,7 +184,38 @@ export default function DownloadSampleTable() {
         </div>
       </div>
 
-      {/* ================= FILTERS ================= */}
+      {/* SOURCE SWITCHER */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => {
+            setSource("download");
+            setPage(1);
+          }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            source === "download"
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+          }`}
+        >
+          Sample Downloads
+        </button>
+
+        <button
+          onClick={() => {
+            setSource("category");
+            setPage(1);
+          }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            source === "category"
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+          }`}
+        >
+          Category Samples
+        </button>
+      </div>
+
+      {/* FILTERS */}
       <div className="bg-white rounded-2xl shadow-lg p-4 mb-5 border border-gray-200">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
@@ -177,7 +239,6 @@ export default function DownloadSampleTable() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* User Email Filter */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Mail size={16} />
@@ -190,12 +251,11 @@ export default function DownloadSampleTable() {
                 placeholder="Search by email..."
                 value={filters.user_email}
                 onChange={(e) => handleFilterChange("user_email", e.target.value)}
-                className="w-full text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-0"
+                className="w-full text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
-          {/* Date Range Filters */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Calendar size={16} />
@@ -205,7 +265,7 @@ export default function DownloadSampleTable() {
               type="date"
               value={filters.from_date}
               onChange={(e) => handleFilterChange("from_date", e.target.value)}
-              className="w-full text-gray-400 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-0"
+              className="w-full text-gray-600 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
@@ -218,65 +278,30 @@ export default function DownloadSampleTable() {
               type="date"
               value={filters.to_date}
               onChange={(e) => handleFilterChange("to_date", e.target.value)}
-              className="w-full px-4 text-gray-400 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-0"
+              className="w-full px-4 text-gray-600 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
         </div>
-
-        {/* Active Filters Indicator */}
-        {Object.values(filters).some(val => val !== "") && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              Active filters: {
-                Object.entries(filters)
-                  .filter(([_, value]) => value !== "")
-                  .map(([key]) => key.replace('_', ' '))
-                  .join(', ')
-              }
-            </p>
-          </div>
-        )}
       </div>
 
-      {/* ================= TABLE ================= */}
+      {/* TABLE */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
         <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-          <table className="w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+          <table className="w-full border-collapse">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b sticky top-0 z-10">
               <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">#</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  #
+                  <div className="flex items-center gap-2"><User size={14} /> User</div>
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <User size={14} />
-                    User
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Product
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  UTM Source
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  UTM Medium
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Campaign
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Ad Group
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Sample
-                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Product</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">UTM Source</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">UTM Medium</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Campaign</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Ad Group</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Sample</th>
               </tr>
             </thead>
 
@@ -288,31 +313,17 @@ export default function DownloadSampleTable() {
                       <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                         <Download className="text-gray-400" size={24} />
                       </div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">
-                        No download records found
-                      </h4>
-                      <p className="text-gray-600 mb-6">
-                        {Object.values(filters).some(val => val !== "") 
-                          ? "Try adjusting your filters to see more results"
-                          : "No downloads have been recorded yet"}
-                      </p>
-                      {Object.values(filters).some(val => val !== "") && (
-                        <button
-                          onClick={handleFilterReset}
-                          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Clear All Filters
-                        </button>
-                      )}
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">No download records found</h4>
+                      <p className="text-gray-600 mb-6">Try adjusting your filters to see more results.</p>
+                      <button onClick={handleFilterReset} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Clear All Filters
+                      </button>
                     </div>
                   </td>
                 </tr>
               ) : (
                 data.map((item, index) => (
-                  <tr 
-                    key={item.id} 
-                    className="hover:bg-gray-50 transition-colors group"
-                  >
+                  <tr key={item.id || index} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900 bg-gray-50 rounded-lg px-3 py-1 inline-block">
                         {(page - 1) * PAGE_LIMIT + index + 1}
@@ -320,75 +331,35 @@ export default function DownloadSampleTable() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                           <User size={16} className="text-blue-600" />
                         </div>
-                        <span className="font-medium text-gray-900">
-                          {item.user_name || "-"}
-                        </span>
+                        <span className="font-medium text-gray-900">{item.user_name || "-"}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 font-medium">
-                        {item.user_email || "-"}
-                      </div>
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{item.user_email || "-"}</td>
                     <td className="px-6 py-4">
                       <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">
                         <Package size={12} />
                         {item.product_name || "-"}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-700">
-                        {item.utm_source || "-"}
-                      </span>
+                    <td className="px-6 py-4 text-sm text-gray-700">{item.utm_source || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{item.utm_medium || "-"}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.utm_campaign_id || "-"}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.adgroup_id || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "-"}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-700">
-                        {item.utm_medium || "-"}
-                      </span>
+                      {item.sample_link ? (
+                        <a href={item.sample_link} target="_blank" rel="noopener noreferrer" 
+                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                          <span className="text-sm">View</span>
+                          <ExternalLink size={14} />
+                        </a>
+                      ) : <span className="text-gray-400 text-sm">No link</span>}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-gray-900">
-                        {item.utm_campaign_id || "-"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-gray-900">
-                        {item.adgroup_id || "-"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">
-                        {item.createdAt
-                          ? new Date(item.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })
-                          : "-"}
-                      </div>
-                    </td>
-                  <td className="px-6 py-4">
-                    {item.sample_link ? (
-                      <a
-                        href={item.sample_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap group/link"
-                      >
-                        <span className="text-sm">View Sample</span>
-                        <ExternalLink
-                          size={14}
-                          className="group-hover/link:translate-x-0.5 transition-transform"
-                        />
-                      </a>
-                    ) : (
-                      <span className="text-gray-400 text-sm">No link</span>
-                    )}
-                  </td>
-
                   </tr>
                 ))
               )}
@@ -396,68 +367,41 @@ export default function DownloadSampleTable() {
           </table>
         </div>
 
-        {/* ================= PAGINATION ================= */}
+        {/* PAGINATION */}
         {data.length > 0 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <div className="text-sm text-gray-700">
+             <div className="text-sm text-gray-700">
               Showing <span className="font-semibold">{(page - 1) * PAGE_LIMIT + 1}</span> to{" "}
               <span className="font-semibold">
                 {Math.min(page * PAGE_LIMIT, (page - 1) * PAGE_LIMIT + data.length)}
-              </span>{" "}
-              of <span className="font-semibold">{(page - 1) * PAGE_LIMIT + data.length}</span> results
+              </span>
             </div>
-
             <div className="flex items-center gap-2">
               <button
                 disabled={page === 1}
                 onClick={() => setPage((p) => p - 1)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
-                <ChevronLeft size={16} />
-                Previous
+                <ChevronLeft size={16} /> Previous
               </button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setPage(pageNum)}
-                      className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
-                        page === pageNum
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-                {totalPages > 5 && (
-                  <span className="px-2 text-gray-500">...</span>
-                )}
-              </div>
-
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
-                <ChevronRight size={16} />
+                Next <ChevronRight size={16} />
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Loading overlay for subsequent loads */}
+      {/* OVERLAY LOADING */}
       {loading && page > 1 && (
         <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-            <p className="text-gray-700 font-medium">Loading more records...</p>
+            <p className="text-gray-700 font-medium">Updating data...</p>
           </div>
         </div>
       )}
