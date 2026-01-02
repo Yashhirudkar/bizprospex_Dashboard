@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Trash2,
 } from "lucide-react";
+import { apiUrl } from "../../../constant/api.js";
 
 export default function ContactsList() {
   const [contacts, setContacts] = useState([]);
@@ -44,7 +45,7 @@ export default function ContactsList() {
       });
 
       const res = await fetch(
-        `http://localhost:5000/api/v1/get-contact?${params}`
+        `${apiUrl}/v1/get-contact?${params}`
       );
 
       const data = await res.json();
@@ -81,7 +82,7 @@ export default function ContactsList() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/v1/delete-contact/${id}`,
+        `${apiUrl}/v1/delete-contact/${id}`,
         { method: "DELETE" }
       );
 
