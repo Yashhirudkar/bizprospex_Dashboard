@@ -10,7 +10,7 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
     slug: "",
     description: "",
     background_image: "", // Used for URL input or Preview string
-    stats_items: [{ title: "", value: 0 }],
+    stats_items: [{ title: "", value: "" }],
     faq_items: [{ question: "", answer: "" }],
   });
 
@@ -23,15 +23,15 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
   useEffect(() => {
     if (category) {
       const parseItems = (items) => {
-        if (!items) return [{ title: "", value: 0 }];
+        if (!items) return [{ title: "", value: "" }];
         if (typeof items === 'string') {
           try {
             return JSON.parse(items);
           } catch {
-            return [{ title: "", value: 0 }];
+            return [{ title: "", value: "" }];
           }
         }
-        return Array.isArray(items) ? items : [{ title: "", value: 0 }];
+        return Array.isArray(items) ? items : [{ title: "", value: "" }];
       };
 
       setFormData({
@@ -92,16 +92,26 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
   /* ===============================
      STATS & FAQ HANDLERS
   =============================== */
-  const handleStatsChange = (index, field, value) => {
-    const newStats = [...formData.stats_items];
-    newStats[index][field] = field === "value" ? parseInt(value) || 0 : value;
-    setFormData((prev) => ({ ...prev, stats_items: newStats }));
-  };
+const handleStatsChange = (index, field, value) => {
+  if (field === "value") {
+    const regex = /^[0-9]*\.?[0-9]*(k|K|m|M|\+)?$/;
+
+    if (value !== "" && !regex.test(value)) return;
+  }
+
+  setFormData((prev) => {
+    const updated = [...prev.stats_items];
+    updated[index][field] = value;
+    return { ...prev, stats_items: updated };
+  });
+};
+
+
 
   const addStatsItem = () => {
     setFormData((prev) => ({
       ...prev,
-      stats_items: [...prev.stats_items, { title: "", value: 0 }],
+      stats_items: [...prev.stats_items, { title: "", value: "" }],
     }));
   };
 
@@ -157,12 +167,18 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
         form.append("background_image_url", formData.background_image);
       }
 
-      const response = await fetch(`${apiUrl}/categories/admin/${category.category_id}`,
-         {
-        method: "PUT",
-        body: form, 
-        credentials : "include",// Fetch automatically sets multipart/form-data boundary
-      });
+
+
+const response = await fetch(
+        `${apiUrl}/categories/admin/${category.category_id}`,
+        {
+          method: "PUT",
+          body: form,
+          credentials: "include",
+          mode: "cors",
+        }
+      );
+
 
       const data = await response.json();
 
@@ -284,13 +300,16 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
                     placeholder="Stat title"
                     className="flex-1 text-gray-600 px-3 py-2 border border-gray-300 rounded-md outline-none"
                   />
-                  <input
-                    type="number"
-                    value={stat.value}
-                    onChange={(e) => handleStatsChange(index, "value", e.target.value)}
-                    placeholder="Value"
-                    className="w-24 px-3 text-gray-600 py-2 border border-gray-300 rounded-md outline-none"
-                  />
+                 <input
+                type="text"
+                value={stat.value}
+                onChange={(e) =>
+                  handleStatsChange(index, "value", e.target.value)
+                }
+                placeholder="e.g. 20k, 5M, 150+"
+                className="w-28 px-3 py-2 text-gray-600 border border-gray-300 rounded-md outline-none"
+              />
+
                   {formData.stats_items.length > 1 && (
                     <button type="button" onClick={() => removeStatsItem(index)} className="text-red-600 p-2">
                       <FaTrash size={14} />

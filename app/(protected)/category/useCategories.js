@@ -5,45 +5,50 @@ export function useCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openMenu, setOpenMenu] = useState(null);
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
-    totalPages: 0
+    totalPages: 0,
   });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
-  const fetchCategories = async (page = 1, limit = 10) => {
+  const fetchCategories = async (
+    page = pagination.page,
+    limit = pagination.limit
+  ) => {
     setLoading(true);
+
     try {
       let url = `${apiUrl}/categories/admin/list?page=${page}&limit=${limit}`;
 
-      // Add filters if applied
+      // 🔍 Search
       if (searchTerm) {
-        url += `&search=${searchTerm}`;
-      }
-      if (statusFilter !== "all") {
-        url += `&status=${statusFilter}`;
-      }
-      if (sortBy) {
-        url += `&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+        url += `&search=${encodeURIComponent(searchTerm)}`;
       }
 
-      const res = await fetch(url);
+      // 🔘 Status filter (backend expects is_active)
+      if (statusFilter !== "all") {
+        url += `&is_active=${statusFilter === "active"}`;
+      }
+
+      // ↕ Sorting
+      if (sortBy) {
+        url += `&sortBy=${sortBy}&order=${sortOrder.toUpperCase()}`;
+      }
+
+      const res = await fetch(url, { credentials: "include" });
       const data = await res.json();
 
       if (data.success) {
-        setCategories(data.data || []);
-        setPagination(data.pagination || {
-          page: page,
-          limit: limit,
-          total: data.data?.length || 0,
-          totalPages: 1
-        });
+        setCategories(data.categories || []);
+        setPagination(data.pagination);
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
@@ -52,9 +57,15 @@ export function useCategories() {
     }
   };
 
+  // 🚀 Initial load
   useEffect(() => {
-    fetchCategories();
+    fetchCategories(1, pagination.limit);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* ==========================
+     HANDLERS
+  ========================== */
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -68,12 +79,11 @@ export function useCategories() {
   };
 
   const handleSort = (field) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(field);
-      setSortOrder("asc");
-    }
+    const newOrder =
+      sortBy === field && sortOrder === "asc" ? "desc" : "asc";
+
+    setSortBy(field);
+    setSortOrder(newOrder);
     fetchCategories(1, pagination.limit);
   };
 
@@ -92,21 +102,27 @@ export function useCategories() {
 
   const deleteCategory = async (categoryId) => {
     try {
-      const response = await fetch(`${apiUrl}/categories/admin/${categoryId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${apiUrl}/categories/admin/${categoryId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (response.ok) {
-        // Refresh categories after successful deletion
         fetchCategories(pagination.page, pagination.limit);
         return { success: true };
-      } else {
-        const errorData = await response.json();
-        return { success: false, error: errorData.message || 'Failed to delete category' };
       }
+
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.message || "Failed to delete category",
+      };
     } catch (error) {
-      console.error('Error deleting category:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error("Error deleting category:", error);
+      return { success: false, error: "Network error occurred" };
     }
   };
 
@@ -129,6 +145,6 @@ export function useCategories() {
     handleSort,
     handleStatusFilter,
     clearFilters,
-    deleteCategory
+    deleteCategory,
   };
 }

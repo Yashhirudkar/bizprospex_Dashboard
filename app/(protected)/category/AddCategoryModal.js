@@ -66,11 +66,20 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
   /* ===============================
      STATS & FAQ HANDLERS
   =============================== */
-  const handleStatsChange = (index, field, value) => {
-    const newStats = [...formData.stats_items];
-    newStats[index][field] = field === "value" ? parseInt(value) || 0 : value;
-    setFormData((prev) => ({ ...prev, stats_items: newStats }));
-  };
+const handleStatsChange = (index, field, value) => {
+  if (field === "value") {
+    const regex = /^[0-9]*\.?[0-9]*(k|K|m|M|\+)?$/;
+
+    if (value !== "" && !regex.test(value)) return;
+  }
+
+  setFormData((prev) => {
+    const updated = [...prev.stats_items];
+    updated[index][field] = value;
+    return { ...prev, stats_items: updated };
+  });
+};
+
 
   const addStatsItem = () => {
     setFormData((prev) => ({
@@ -249,7 +258,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           {/* STATS ITEMS */}
-          <div>
+       <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-gray-700">Stats Items</label>
               <button type="button" onClick={addStatsItem} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
@@ -266,13 +275,16 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
                     placeholder="Stat title"
                     className="flex-1 text-gray-600 px-3 py-2 border border-gray-300 rounded-md outline-none"
                   />
-                  <input
-                    type="number"
-                    value={stat.value}
-                    onChange={(e) => handleStatsChange(index, "value", e.target.value)}
-                    placeholder="Value"
-                    className="w-24 px-3 text-gray-600 py-2 border border-gray-300 rounded-md outline-none"
-                  />
+                 <input
+                type="text"
+                value={stat.value}
+                onChange={(e) =>
+                  handleStatsChange(index, "value", e.target.value)
+                }
+                placeholder="e.g. 20k, 5M, 150+"
+                className="w-28 px-3 py-2 text-gray-600 border border-gray-300 rounded-md outline-none"
+              />
+
                   {formData.stats_items.length > 1 && (
                     <button type="button" onClick={() => removeStatsItem(index)} className="text-red-600 p-2">
                       <FaTrash size={14} />

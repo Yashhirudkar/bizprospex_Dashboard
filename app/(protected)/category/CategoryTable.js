@@ -73,7 +73,7 @@ const [selectedCategoryForSample, setSelectedCategoryForSample] = useState(null)
                 entity_type: "category",
                 entity_id: cat.category_id,
               },
-              withCredentials: true,
+             withCredentials:"include",
             }
           );
           if (res.data.data) {
