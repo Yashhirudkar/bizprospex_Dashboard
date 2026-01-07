@@ -118,63 +118,59 @@ const handleStatsChange = (index, field, value) => {
   /* ===============================
      SUBMIT LOGIC
   =============================== */
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    const form = new FormData();
+    try {
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("slug", formData.slug);
+      form.append("description", formData.description);
+      form.append("stats_items", JSON.stringify(formData.stats_items));
+      form.append("faq_items", JSON.stringify(formData.faq_items));
 
-    form.append("name", formData.name);
-    form.append("slug", formData.slug);
-    form.append("description", formData.description);
-    form.append("stats_items", JSON.stringify(formData.stats_items));
-    form.append("faq_items", JSON.stringify(formData.faq_items));
-
-    if (imageFile) {
-      form.append("background_image", imageFile);
-    } else if (
-      typeof formData.background_image === "string" &&
-      formData.background_image.startsWith("http")
-    ) {
-      form.append("background_image_url", formData.background_image);
-    }
-
-    const response = await fetch(
-      `${apiUrl}/categories/admin/create`,
-      {
-        method: "POST",
-        body: form,
-        credentials: "include",
+      // Logic: If we have a physical file, upload it. 
+      // If not, but we have a string in background_image, treat it as a URL.
+      if (imageFile) {
+        form.append("background_image", imageFile);
+      } else if (formData.background_image && !formData.background_image.startsWith('data:')) {
+        // We check !startsWith('data:') to ensure we don't send base64 preview strings as URLs
+        form.append("background_image_url", formData.background_image);
       }
-    );
 
-    const data = await response.json();
-
-    if (data.success) {
-      onSuccess();
-      onClose();
-      setFormData({
-        name: "",
-        slug: "",
-        description: "",
-        background_image: "",
-        stats_items: [{ title: "", value: 0 }],
-        faq_items: [{ question: "", answer: "" }],
+      const response = await fetch(`${apiUrl}/categories/admin/create`, {
+        method: "POST",
+        body: form, // Fetch automatically sets multipart/form-data boundary
+        credentials:"include",
       });
-      setImageFile(null);
-    } else {
-      setError(data.message || "Failed to create category");
-    }
-  } catch (err) {
-    console.error(err);
-    setError("An error occurred while creating the category");
-  } finally {
-    setLoading(false);
-  }
-};
 
+      const data = await response.json();
+
+      if (data.success) {
+        onSuccess();
+        onClose();
+        // Reset Form
+        setFormData({
+          name: "",
+          slug: "",
+          description: "",
+          background_image: "",
+          stats_items: [{ title: "", value: 0 }],
+          faq_items: [{ question: "", answer: "" }],
+        });
+        setImageFile(null);
+      } else {
+        setError(data.message || "Failed to create category");
+      }
+    } catch (err) {
+      setError("An error occurred while creating the category");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
