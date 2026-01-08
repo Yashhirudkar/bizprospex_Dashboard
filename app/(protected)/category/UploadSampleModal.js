@@ -47,7 +47,7 @@ export default function UploadSampleModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-40">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">
           Add Sample Link
@@ -62,13 +62,13 @@ export default function UploadSampleModal({
           placeholder="Paste Google Sheet public link"
           value={sampleLink}
           onChange={(e) => setSampleLink(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+          className="w-full border border-gray-300 rounded-lg p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm rounded-lg border"
+            className="px-4 py-2 text-sm rounded-lg border text-gray-700 hover:bg-gray-100"
           >
             Cancel
           </button>
@@ -76,7 +76,7 @@ export default function UploadSampleModal({
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 "
           >
             {loading ? "Saving..." : "Save"}
           </button>
