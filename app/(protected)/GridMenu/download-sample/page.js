@@ -77,26 +77,27 @@ export default function DownloadSampleTable() {
               utm: {
                 source: item.utm_source || "-",
                 medium: item.utm_medium || "-",
-                campaign: item.utm_campaign_id || "-",
+                campaign: item.utm_campaign || "-",
                 adgroup: item.adgroup_id || "-",
               },
               createdAt: item.createdAt,
               sample_link: item.sample_link,
             }))
-          : (res.data?.data || []).map(item => ({
-              id: item.id,
-              user_name: item.user_name,
-              user_email: item.user_email,
-              product_name: item.product_name,
-              utm: {
-                source: item.Category?.name || "-",
-                medium: "-",
-                campaign: item.category_id || "-",
-                adgroup: item.sample_link_id || "-",
-              },
-              createdAt: item.createdAt,
-              sample_link: item.CategorySampleFile?.sample_link,
-            }));
+        : (res.data?.data || []).map(item => ({
+  id: item.id,
+  user_name: item.user_name,
+  user_email: item.user_email,
+  product_name: item.product_name,
+  utm: {
+    source: item.utm_source || "-",
+    medium: item.utm_medium || "-",
+    campaign: item.utm_campaign || "-",
+    adgroup: item.utm_adgroup || "-",
+  },
+  createdAt: item.createdAt,
+  sample_link: item.CategorySampleFile?.sample_link,
+}));
+
 
       setData(normalizedData);
 
