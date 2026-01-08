@@ -10,6 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { apiUrl } from "@/constant/api.js";
+import TooltipCell from "@/app/components/tooltip.js";
 
 export default function ContactsList() {
   const [contacts, setContacts] = useState([]);
@@ -224,44 +225,98 @@ const fetchContacts = async () => {
               <th className="py-4 px-6 text-left">Message</th>
               <th className="py-4 px-6 text-left">Form Type</th>
               <th className="py-4 px-6 text-left">Created</th>
-              <th className="py-4 px-6 text-center">Action</th>
+              <th className="py-4 px-6 text-left">UTM Data</th>
+                <th className="py-4 px-6 text-center">Action</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-300 text-gray-700">
-            {contacts.map((c) => (
-              <tr key={c.id} className="hover:bg-gray-50">
-                <td className="py-4 px-6">{c.user_name || "-"}</td>
-                <td className="py-4 px-6">{c.email}</td>
-                <td className="py-4 px-6 line-clamp-2">
-                  {c.message || "-"}
-                </td>
-                <td className="py-4 px-6">
-                  {c.form_type?.replace("-", " ") || "-"}
-                </td>
-                <td className="py-4 px-6 text-sm text-gray-500">
-                  {new Date(c.createdAt).toLocaleString()}
-                </td>
-                <td className="py-4 px-6 text-center">
-                  <button
-                    onClick={() => handleDelete(c.id)}
-                    className="p-2 rounded-md text-red-500 hover:bg-red-100"
-                    title="Delete contact"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+       <tbody className="divide-y divide-gray-300 text-gray-700">
+  {contacts.map((c) => (
+    <tr key={c.id} className="hover:bg-gray-50">
+      
+      {/* NAME */}
+      <td className="py-4 px-6 max-w-[180px]">
+        <TooltipCell text={c.user_name}>
+          {c.user_name}
+        </TooltipCell>
+      </td>
 
-            {contacts.length === 0 && (
-              <tr>
-                <td colSpan="6" className="py-10 text-center text-gray-500">
-                  No contacts found
-                </td>
-              </tr>
-            )}
-          </tbody>
+      {/* EMAIL */}
+      <td className="py-4 px-6 max-w-[220px] text-blue-500">
+        <TooltipCell text={c.email}>
+          {c.email}
+        </TooltipCell>
+      </td>
+
+      {/* MESSAGE */}
+      <td className="py-4 px-6 max-w-[300px]">
+        <TooltipCell text={c.message}>
+          {c.message}
+        </TooltipCell>
+      </td>
+
+      {/* FORM TYPE */}
+      <td className="py-4 px-6 max-w-[160px]">
+        <TooltipCell text={c.form_type?.replace("-", " ")}>
+          {c.form_type?.replace("-", " ")}
+        </TooltipCell>
+      </td>
+
+      {/* CREATED */}
+      <td className="py-4 px-6 text-sm text-gray-500">
+        {new Date(c.createdAt).toLocaleString()}
+      </td>
+
+      {/* UTM DATA */}
+      <td className="py-4 px-6 text-xs max-w-[320px]">
+        {(() => {
+          const utmObject = {
+            utm_source: c.utm_source,
+            utm_medium: c.utm_medium,
+            utm_campaign: c.utm_campaign,
+            utm_campaignid: c.utm_campaignid,
+            utm_term: c.utm_term,
+            adgroupid: c.adgroupid,
+            adgroup: c.adgroup,
+          };
+
+          const utmText = Object.entries(utmObject)
+            .filter(([, v]) => v)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(" | ");
+
+          return utmText ? (
+            <TooltipCell text={utmText} maxWidth="max-w-[320px]">
+              {utmText}
+            </TooltipCell>
+          ) : (
+            "-"
+          );
+        })()}
+      </td>
+
+      {/* ACTION */}
+      <td className="py-4 px-6 text-center">
+        <button
+          onClick={() => handleDelete(c.id)}
+          className="p-2 rounded-md text-red-500 hover:bg-red-100"
+          title="Delete contact"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </td>
+    </tr>
+  ))}
+
+  {contacts.length === 0 && (
+    <tr>
+      <td colSpan="7" className="py-10 text-center text-gray-500">
+        No contacts found
+      </td>
+    </tr>
+  )}
+</tbody>
+
         </table>
       </div>
 

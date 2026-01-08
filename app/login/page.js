@@ -124,6 +124,7 @@ export default function Login() {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleEmailSubmit(); }}
             disabled={step === "otp" || loading}
             className="w-full border text-gray-600  rounded-md px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           />
@@ -144,6 +145,7 @@ export default function Login() {
                 placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleOtpSubmit(); }}
                 disabled={loading}
                 className="w-full border text-gray-600  rounded-md px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

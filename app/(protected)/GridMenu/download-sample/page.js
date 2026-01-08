@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { 
-  Search, 
-  Calendar, 
-  User, 
-  Package, 
+import {
+  Search,
+  Calendar,
+  User,
+  Package,
   ExternalLink,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +16,7 @@ import {
   Globe,
   BarChart3
 } from "lucide-react";
+import TooltipCell from "../../../components/tooltip.js";
 
 const PAGE_LIMIT = 20;
 
@@ -68,16 +69,31 @@ export default function DownloadSampleTable() {
       // Normalize response data structure
       const normalizedData =
         source === "download"
-          ? res.data?.data?.downloads || []
+          ? (res.data?.data?.downloads || []).map(item => ({
+              id: item.id,
+              user_name: item.user_name,
+              user_email: item.user_email,
+              product_name: item.product_name,
+              utm: {
+                source: item.utm_source || "-",
+                medium: item.utm_medium || "-",
+                campaign: item.utm_campaign_id || "-",
+                adgroup: item.adgroup_id || "-",
+              },
+              createdAt: item.createdAt,
+              sample_link: item.sample_link,
+            }))
           : (res.data?.data || []).map(item => ({
               id: item.id,
               user_name: item.user_name,
               user_email: item.user_email,
               product_name: item.product_name,
-              utm_source: item.Category?.name || "-",
-              utm_medium: "-",
-              utm_campaign_id: item.category_id,
-              adgroup_id: item.sample_link_id,
+              utm: {
+                source: item.Category?.name || "-",
+                medium: "-",
+                campaign: item.category_id || "-",
+                adgroup: item.sample_link_id || "-",
+              },
               createdAt: item.createdAt,
               sample_link: item.CategorySampleFile?.sample_link,
             }));
@@ -112,6 +128,27 @@ export default function DownloadSampleTable() {
     setPage(1); // Reset to first page when filtering
   };
 
+
+  const formatUtmInline = (utm) => {
+  if (!utm) return "-";
+
+  const parts = [];
+
+  if (utm.source && utm.source !== "-")
+    parts.push(`utm_source: ${utm.source}`);
+
+  if (utm.medium && utm.medium !== "-")
+    parts.push(`utm_medium: ${utm.medium}`);
+
+  if (utm.campaign && utm.campaign !== "-")
+    parts.push(`utm_campaign: ${utm.campaign}`);
+
+  if (utm.adgroup && utm.adgroup !== "-")
+    parts.push(`utm_adgroup: ${utm.adgroup}`);
+
+return parts.length ? parts.join(" | ") : "-";
+};
+
   const handleFilterReset = () => {
     setFilters({
       user_email: "",
@@ -123,6 +160,7 @@ export default function DownloadSampleTable() {
     });
     setPage(1);
   };
+
 
   /* ================= UI RENDERING ================= */
   if (loading && page === 1) {
@@ -296,74 +334,117 @@ export default function DownloadSampleTable() {
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">UTM Source</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">UTM Medium</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Campaign</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Ad Group</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">UTM Details</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Sample</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-200">
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan="10" className="px-6 py-16 text-center">
-                    <div className="max-w-sm mx-auto">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Download className="text-gray-400" size={24} />
-                      </div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">No download records found</h4>
-                      <p className="text-gray-600 mb-6">Try adjusting your filters to see more results.</p>
-                      <button onClick={handleFilterReset} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Clear All Filters
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                data.map((item, index) => (
-                  <tr key={item.id || index} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900 bg-gray-50 rounded-lg px-3 py-1 inline-block">
-                        {(page - 1) * PAGE_LIMIT + index + 1}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <User size={16} className="text-blue-600" />
-                        </div>
-                        <span className="font-medium text-gray-900">{item.user_name || "-"}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{item.user_email || "-"}</td>
-                    <td className="px-6 py-4">
-                      <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">
-                        <Package size={12} />
-                        {item.product_name || "-"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{item.utm_source || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{item.utm_medium || "-"}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.utm_campaign_id || "-"}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.adgroup_id || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "-"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {item.sample_link ? (
-                        <a href={item.sample_link} target="_blank" rel="noopener noreferrer" 
-                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                          <span className="text-sm">View</span>
-                          <ExternalLink size={14} />
-                        </a>
-                      ) : <span className="text-gray-400 text-sm">No link</span>}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+          <tbody className="divide-y divide-gray-200">
+  {data.length === 0 ? (
+    <tr>
+      <td colSpan="10" className="px-6 py-16 text-center">
+        <div className="max-w-sm mx-auto">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <Download className="text-gray-400" size={24} />
+          </div>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">
+            No download records found
+          </h4>
+          <p className="text-gray-600 mb-6">
+            Try adjusting your filters to see more results.
+          </p>
+          <button
+            onClick={handleFilterReset}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      </td>
+    </tr>
+  ) : (
+    data.map((item, index) => (
+      <tr key={item.id || index} className="hover:bg-gray-50 transition-colors">
+        
+        {/* INDEX */}
+        <td className="px-6 py-4">
+          <div className="text-sm font-medium text-gray-900 bg-gray-50 rounded-lg px-3 py-1 inline-block">
+            {(page - 1) * PAGE_LIMIT + index + 1}
+          </div>
+        </td>
+
+        {/* USER NAME */}
+        <td className="px-6 py-4 max-w-[200px]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+              <User size={16} className="text-blue-600" />
+            </div>
+            <TooltipCell text={item.user_name}>
+              <span className="font-medium text-gray-900 truncate">
+                {item.user_name}
+              </span>
+            </TooltipCell>
+          </div>
+        </td>
+
+        {/* EMAIL */}
+        <td className="px-6 py-4 text-sm text-gray-900 max-w-[220px]">
+          <TooltipCell text={item.user_email}>
+            {item.user_email}
+          </TooltipCell>
+        </td>
+
+        {/* PRODUCT */}
+        <td className="px-6 py-4 max-w-[240px]">
+          <TooltipCell text={item.product_name}>
+            <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm truncate">
+              <Package size={12} />
+              {item.product_name}
+            </div>
+          </TooltipCell>
+        </td>
+
+       {/* UTM DETAILS */}
+      {/* UTM DETAILS */}
+<td className="px-6 py-4 text-sm max-w-[260px]">
+  <TooltipCell text={formatUtmInline(item.utm)}>
+    <div className="truncate text-xs text-gray-700">
+      {formatUtmInline(item.utm)}
+    </div>
+  </TooltipCell>
+</td>
+
+
+
+        {/* DATE */}
+        <td className="px-6 py-4 text-sm text-gray-600">
+          {item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString()
+            : "-"}
+        </td>
+
+        {/* LINK */}
+        <td className="px-6 py-4">
+          {item.sample_link ? (
+            <a
+              href={item.sample_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <span className="text-sm">View</span>
+              <ExternalLink size={14} />
+            </a>
+          ) : (
+            <span className="text-gray-400 text-sm">No link</span>
+          )}
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
+
           </table>
         </div>
 
