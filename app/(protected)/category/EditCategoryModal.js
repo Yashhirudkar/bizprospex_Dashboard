@@ -14,51 +14,74 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
     faq_items: [{ question: "", answer: "" }],
   });
 
+  const isInitializing = useRef(false);
+  const [isSlugTouched, setIsSlugTouched] = useState(false);
   const [imageFile, setImageFile] = useState(null); // Actual binary file for upload
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
 
   // Pre-populate form when category changes
-  useEffect(() => {
-    if (category) {
-      const parseItems = (items) => {
-        if (!items) return [{ title: "", value: "" }];
-        if (typeof items === 'string') {
-          try {
-            return JSON.parse(items);
-          } catch {
-            return [{ title: "", value: "" }];
-          }
-        }
-        return Array.isArray(items) ? items : [{ title: "", value: "" }];
-      };
+useEffect(() => {
+  if (category) {
+    isInitializing.current = true; // 👈 ADD
 
-      setFormData({
-        name: category.name || "",
-        slug: category.slug || "",
-        description: category.description || "",
-        background_image: category.background_image || "",
-        stats_items: parseItems(category.stats_items),
-        faq_items: category.faq_items ? (typeof category.faq_items === 'string' ? JSON.parse(category.faq_items) : category.faq_items) : [{ question: "", answer: "" }],
-      });
-      setImageFile(null); // Reset file on new category
-      setError("");
-    }
-  }, [category]);
+    setIsSlugTouched(false);
+
+    const parseItems = (items) => {
+      if (!items) return [{ title: "", value: "" }];
+      if (typeof items === "string") {
+        try {
+          return JSON.parse(items);
+        } catch {
+          return [{ title: "", value: "" }];
+        }
+      }
+      return Array.isArray(items) ? items : [{ title: "", value: "" }];
+    };
+
+    setFormData({
+      name: category.name || "",
+      slug: category.slug || "",
+      description: category.description || "",
+      background_image: category.background_image || "",
+      stats_items: parseItems(category.stats_items),
+      faq_items: category.faq_items
+        ? typeof category.faq_items === "string"
+          ? JSON.parse(category.faq_items)
+          : category.faq_items
+        : [{ question: "", answer: "" }],
+    });
+
+    setImageFile(null);
+    setError("");
+  }
+}, [category]);
+
+
 
   /* ===============================
      AUTO SLUG GENERATION
   =============================== */
-  useEffect(() => {
-    if (formData.name && formData.name !== category?.name) {
-      const generatedSlug = formData.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      setFormData((prev) => ({ ...prev, slug: generatedSlug }));
-    }
-  }, [formData.name, category?.name]);
+useEffect(() => {
+  if (isInitializing.current) {
+    isInitializing.current = false;
+    return; // ⛔ skip auto-slug on load
+  }
+
+  if (!isSlugTouched && formData.name) {
+    const generatedSlug = formData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    setFormData((prev) => ({
+      ...prev,
+      slug: generatedSlug,
+    }));
+  }
+}, [formData.name]);
+
 
   /* ===============================
      INPUT HANDLERS
@@ -229,14 +252,18 @@ const handleSubmit = async (e) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-              <input
-                type="text"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Auto-generated"
-              />
+             <input
+              type="text"
+              name="slug"
+              value={formData.slug}
+              onChange={(e) => {
+                setIsSlugTouched(true); // ✅ VERY IMPORTANT
+                handleInputChange(e);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 text-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="Auto-generated"
+            />
+
             </div>
           </div>
 
