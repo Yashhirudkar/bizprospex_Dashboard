@@ -1,9 +1,10 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "../../constant/api";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { apiUrl } from "../../constant/api";
 
 const SIDEBAR_WIDTH = 220;
 
@@ -11,72 +12,47 @@ export default function ProtectedLayout({ children }) {
   const router = useRouter();
 
   const [open, setOpen] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // ✅ Ensure client-side rendering
+  /* ✅ Mark mounted (prevents hydration mismatch) */
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
-  // 📱 Responsive sidebar logic
+  /* 📱 Responsive sidebar (client-only) */
   useEffect(() => {
-    if (!isClient) return;
+    if (!mounted) return;
 
     const handleResize = () => {
-      if (window.innerWidth < 768) setOpen(false);
-      else setOpen(true);
+      if (window.innerWidth < 768) {
+        setOpen(false);
+      } else {
+        setOpen(true);
+      }
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isClient]);
+  }, [mounted]);
 
-  // 🔒 Auth check
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch(`${apiUrl}/admin/check-auth`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        const data = await res.json();
-
-        if (!data.loggedIn) {
-          router.push("/login");
-        } else {
-          setLoading(false);
-        }
-      } catch (err) {
-        router.push("/login");
-      }
-    }
-
-    checkAuth();
-  }, [router]);
-
-  // 🚪 Logout
+  /* 🚪 Logout */
   const handleLogout = async () => {
     try {
       await fetch(`${apiUrl}/admin/logout`, {
         method: "POST",
         credentials: "include",
       });
-      router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);
+    } finally {
+      router.push("/login");
     }
   };
 
-  // ⏳ Loading screen
-  if (loading || !isClient) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="w-14 h-14 border-4 border-gray-300 border-t-black rounded-full animate-spin" />
-      </div>
-    );
+  /* 🚫 Avoid server/client mismatch */
+  if (!mounted) {
+    return null;
   }
 
   return (
@@ -88,10 +64,7 @@ export default function ProtectedLayout({ children }) {
       <div
         className="flex flex-col flex-1 transition-all duration-300"
         style={{
-          marginLeft:
-            isClient && window.innerWidth >= 768 && open
-              ? `${SIDEBAR_WIDTH}px`
-              : "0px",
+          marginLeft: open ? `${SIDEBAR_WIDTH}px` : "0px",
         }}
       >
         {/* TOPBAR */}

@@ -31,23 +31,30 @@ export default function ProductUploadPage() {
 
     return () => clearTimeout(timer);
   }, [search, page]);
+        const fetchProducts = async (pageNum = 1, searchTerm = "") => {
+          setLoading(true);
+          try {
+            const res = await axios.get(`${apiUrl}/admin/products`, {
+              params: {
+                search: searchTerm,
+                page: pageNum,
+                limit: 10,
+              },
+              withCredentials: true,
+            });
 
-  const fetchProducts = async (pageNum = 1, searchTerm = "") => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${apiUrl}/admin/products`, {
-        params: { search: searchTerm, page: pageNum, limit: 10 },
-        withCredentials: true,
-      });
+            // ✅ Backend returns data as an array, not data.items
+            setProducts(res.data.data || []);
 
-      setProducts(res.data.data.items || []);
-      setTotalPages(res.data.data.totalPages || 1);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch products");
-    } finally {
-      setLoading(false);
-    }
-  };
+            // ✅ Pagination is a separate object
+            setTotalPages(res.data.pagination?.totalPages || 1);
+          } catch (err) {
+            setError(err.response?.data?.message || "Failed to fetch products");
+          } finally {
+            setLoading(false);
+          }
+        };
+
 
   const handleProductSelect = (product) => {
     setSelectedProduct(product);
@@ -123,7 +130,7 @@ export default function ProductUploadPage() {
                       className="hover:bg-blue-50 transition cursor-pointer"
                     >
                       <td className="px-4 py-3 text-gray-600 font-medium whitespace-nowrap">
-                        {product.title}
+                        {product.name}
                       </td>
 
                       <td className="px-4 py-3">
