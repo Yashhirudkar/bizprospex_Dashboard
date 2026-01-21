@@ -31,14 +31,23 @@ export function useDownloadSample() {
             ? "/api/admin/Downloadsample"
             : "/api/admin/category/sample-downloads";
 
+        const params = {
+          page: pageNo,
+          limit: PAGE_LIMIT,
+        };
+
+        if (source === "download") {
+          Object.entries(filters).forEach(([key, value]) => {
+            if (value !== "") {
+              params[key] = value;
+            }
+          });
+        }
+
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}${url}`,
           {
-            params: {
-              page: pageNo,
-              limit: PAGE_LIMIT,
-              ...(source === "download" ? filters : {}),
-            },
+            params,
             withCredentials: true,
           }
         );
