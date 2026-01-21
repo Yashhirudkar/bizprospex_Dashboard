@@ -28,7 +28,7 @@ export default function DataTable({
 
     try {
       const response = await fetch(
-        `${apiUrl}/admin/download-sample/${id}`,
+        `${apiUrl}/admin/Downloadsample/${id}`,
         {
           method: "DELETE",
           credentials: "include",
