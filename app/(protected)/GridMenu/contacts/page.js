@@ -273,11 +273,10 @@ const fetchContacts = async () => {
           const utmObject = {
             utm_source: c.utm_source,
             utm_medium: c.utm_medium,
-            utm_campaign: c.utm_campaign,
             utm_campaignid: c.utm_campaignid,
-            utm_term: c.utm_term,
             adgroupid: c.adgroupid,
-            adgroup: c.adgroup,
+            country: c.country || "-",
+            city: c.city || "-",
           };
 
           const utmText = Object.entries(utmObject)

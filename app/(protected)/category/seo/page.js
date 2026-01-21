@@ -68,7 +68,7 @@ export default function CategorySeoPage() {
           `${apiUrl}/categories/admin/list`,
           { withCredentials: true }
         );
-        setCategories(res.data.data || []);
+        setCategories(res.data.categories || []);
       } catch (err) {
         console.error(err);
       }

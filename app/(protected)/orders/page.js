@@ -121,13 +121,13 @@ export default function OrdersTable() {
                                 ₹{item.price}
                               </p>
                              <p className="text-xs text-gray-500">
-  Leads:{" "}
-  {item.meta_data?.find(
-    (m) =>
-      m.key?.toLowerCase().includes("lead") &&
-      m.key?.toLowerCase().includes("count")
-  )?.display_value || "-"}
-</p>
+                              Leads:{" "}
+                              {item.meta_data?.find(
+                                (m) =>
+                                  m.key?.toLowerCase().includes("lead") &&
+                                  m.key?.toLowerCase().includes("count")
+                              )?.display_value || "-"}
+                            </p>
 
                             </div>
                           ))
@@ -140,7 +140,7 @@ export default function OrdersTable() {
                     </td>
 
                     <td className="px-4 py-3 font-medium whitespace-nowrap">
-                      ₹{order.total}
+                      ${order.total}
                     </td>
 
                     {/* STATUS */}

@@ -1,0 +1,17 @@
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+export default function StatusBadge({ isActive }) {
+  return (
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+      {isActive ? (
+        <>
+          <FaEye className="inline mr-1" /> Active
+        </>
+      ) : (
+        <>
+          <FaEyeSlash className="inline mr-1" /> Inactive
+        </>
+      )}
+    </span>
+  );
+}
