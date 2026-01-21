@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useLayoutEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -9,26 +9,29 @@ import { apiUrl } from "../../constant/api";
 
 const SIDEBAR_WIDTH = 220;
 
-// Configure axios globally for this layout
+// Ensure cookies are handled for every request in this layout
 axios.defaults.withCredentials = true;
 
 export default function ProtectedLayout({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [open, setOpen] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   /**
-   * 🛡️ AUTH GUARD (Session Verification)
-   * We use useLayoutEffect or useEffect to run this before the browser paints
+   * 🛡️ AUTH GUARD
+   * This is the "Firewall". It prevents the dashboard from rendering
+   * until the backend verifies the 'adminToken' cookie.
    */
   useEffect(() => {
     let isSubscribed = true;
 
     const verifyAuth = async () => {
       try {
-        // Attempt to hit the auth check endpoint
+        // We call the backend. If the cookie is missing/expired, 
+        // the backend middleware will throw a 401 error.
         const res = await axios.get(`${apiUrl}/admin/check-auth`);
 
         if (isSubscribed) {
@@ -36,14 +39,14 @@ export default function ProtectedLayout({ children }) {
             setMounted(true);
             setLoading(false);
           } else {
-            // Backend responded but session is false
+            // LoggedIn is false, force redirect
             handleRedirect();
           }
         }
       } catch (err) {
-        // Catch block triggers on 401, 403, or network errors
+        // Catch block triggers on 401 Unauthorized
         if (isSubscribed) {
-          console.error("Authentication check failed. Redirecting...");
+          console.warn("Session expired or invalid. Redirecting to login...");
           handleRedirect();
         }
       }
@@ -52,13 +55,14 @@ export default function ProtectedLayout({ children }) {
     const handleRedirect = () => {
       setMounted(false);
       setLoading(false);
+      // Use replace so they can't go "Back" to the protected page
       router.replace("/login");
     };
 
     verifyAuth();
 
     return () => { isSubscribed = false; };
-  }, [router]);
+  }, [router, pathname]);
 
   /**
    * 📱 RESPONSIVE SIDEBAR
@@ -92,22 +96,19 @@ export default function ProtectedLayout({ children }) {
 
   /**
    * ⏳ LOADING SCREEN
-   * This block acts as a "Firewall". While loading is true, 
-   * the Dashboard HTML is NOT rendered at all.
+   * While loading is true, the Dashboard HTML is NOT rendered.
    */
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-gray-600 font-medium">Authenticating...</p>
+        <p className="mt-4 text-gray-500 font-medium">Verifying Session...</p>
       </div>
     );
   }
 
-  // 🛡️ HARD GUARD: If not authenticated, render NOTHING.
-  if (!mounted) {
-    return null;
-  }
+  // 🛡️ HARD GUARD: If session check finished but not authorized, render nothing
+  if (!mounted) return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -123,6 +124,7 @@ export default function ProtectedLayout({ children }) {
       >
         <Topbar handleLogout={handleLogout} />
         <div className="h-[65px]" />
+        
         <main className="p-4 md:p-6 min-h-[calc(100vh-65px)]">
           {children}
         </main>
