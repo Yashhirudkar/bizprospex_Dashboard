@@ -122,9 +122,13 @@ export default function OrdersTable() {
                               </p>
                              <p className="text-xs text-gray-500">
                               Leads:{" "}
-                           {item.meta_data?.find(
-                          (m) => m.key?.toLowerCase().includes("lead")
-                        )?.display_value || "-"}
+                          {item.meta_data?.find(
+                        (m) => {
+                          const key = m.key?.toLowerCase();
+                          return key === "leads" || key === "leads count";
+                        }
+                      )?.display_value || "-"}
+
 
                             </p>
 
