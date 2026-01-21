@@ -1,9 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
 import { apiUrl } from "../../constant/api";
+
+// Set global axios defaults for cookies
+axios.defaults.withCredentials = true;
 
 export default function Login() {
   const router = useRouter();
@@ -14,6 +17,23 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  // Check if already logged in on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        // You should create this endpoint in backend: /api/admin/verify
+        const res = await axios.get(`${apiUrl}/admin/verify`);
+        if (res.status === 200) {
+          router.push("/upload-data");
+        }
+      } catch (err) {
+        // Not logged in, stay on login page
+        console.log("No active session found");
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const validateEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -33,7 +53,8 @@ export default function Login() {
 
       const res = await axios.post(
         `${apiUrl}/admin/request-otp-admin`,
-        { email }
+        { email },
+        { withCredentials: true } // Added for consistency
       );
 
       if (res.status === 200) {
@@ -65,12 +86,21 @@ export default function Login() {
       const res = await axios.post(
         `${apiUrl}/admin/verify-otp-admin`,
         { email, otp },
-        { withCredentials: true }
+        { withCredentials: true } // CRITICAL: Allows browser to save the authToken cookie
       );
 
       if (res.status === 200 && res.data.success) {
+        // If your backend sends a short-lived downloadToken in the body,
+        // you can store it in localStorage as it's not a sensitive session cookie.
+        if (res.data.downloadToken) {
+          localStorage.setItem("downloadToken", res.data.downloadToken);
+        }
+
         setMessage("Login successful!");
-        router.push("/upload-data");
+        // Small delay to ensure cookie is set before redirect
+        setTimeout(() => {
+          router.push("/upload-data");
+        }, 500);
       } else {
         setError(res.data.message || "Invalid OTP.");
       }
@@ -95,6 +125,7 @@ export default function Login() {
             width={200}
             height={60}
             className="mb-6"
+            priority
           />
 
           <h1 className="text-xl font-semibold text-black mb-1">
@@ -126,7 +157,7 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleEmailSubmit(); }}
             disabled={step === "otp" || loading}
-            className="w-full border text-gray-600  rounded-md px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full border text-gray-600 rounded-md px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           />
 
           {step === "email" ? (
@@ -147,7 +178,7 @@ export default function Login() {
                 onChange={(e) => setOtp(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleOtpSubmit(); }}
                 disabled={loading}
-                className="w-full border text-gray-600  rounded-md px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border text-gray-600 rounded-md px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
               <button
