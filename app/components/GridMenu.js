@@ -6,9 +6,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGrip,
   faDownload,
+  faList,
   faBriefcase,
   faDatabase,
-  faList,
   faShoppingCart,
   faBookmark,
   faKey,
@@ -22,17 +22,14 @@ export default function GridMenu() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleNavigate = (path) => {
@@ -42,48 +39,49 @@ export default function GridMenu() {
 
   return (
     <div className="relative">
-      {/* GRIP BUTTON */}
       <button
         aria-label="Apps Menu"
-        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center justify-center w-10 h-10 rounded-full
-                   bg-gray-100 text-gray-600
-                   hover:bg-gray-200 hover:text-gray-900
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
       >
-        <FontAwesomeIcon icon={faGrip} size="lg" />
+        <FontAwesomeIcon icon={faGrip} />
       </button>
 
-      {/* POPUP */}
       {open && (
         <div
           ref={menuRef}
-          className="absolute right-0 mt-3 w-80 bg-white
-                     rounded-2xl shadow-xl border p-4 z-50"
+          className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border p-4 z-50"
         >
           <div className="grid grid-cols-3 gap-6 text-center">
+
             <MenuItem
-              title="Download Sample"
+              title="Product Downloads"
               icon={faDownload}
-              active={pathname === "/GridMenu/download-sample"}
-              onClick={() => handleNavigate("/GridMenu/download-sample")}
+              active={pathname.startsWith("/GridMenu/product-sample")}
+              onClick={() => handleNavigate("/GridMenu/product-sample")}
+            />
+
+            <MenuItem
+              title="Category Downloads"
+              icon={faList}
+              active={pathname.startsWith("/GridMenu/category-sample")}
+              onClick={() => handleNavigate("/GridMenu/category-sample")}
             />
 
             <MenuItem
               title="Contact Lists"
               icon={faBriefcase}
-              active={pathname === "/GridMenu/contacts"}
+              active={pathname.startsWith("/GridMenu/contacts")}
               onClick={() => handleNavigate("/GridMenu/contacts")}
             />
 
             <MenuItem title="Dataset Assignments" icon={faDatabase} />
-            <MenuItem title="20% Exhibitors list" icon={faList} />
             <MenuItem title="Orders list" icon={faShoppingCart} />
             <MenuItem title="Bookmark" icon={faBookmark} />
             <MenuItem title="API Key Model" icon={faKey} />
             <MenuItem title="UTM Records" icon={faChartLine} />
             <MenuItem title="Help" icon={faCircleQuestion} />
+
           </div>
         </div>
       )}
@@ -95,26 +93,18 @@ function MenuItem({ title, icon, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      type="button"
-      className={`flex flex-col items-center gap-2
-        ${active ? "text-blue-600" : "text-gray-700"}
-        hover:text-blue-600 focus:outline-none`}
+      className={`flex flex-col items-center gap-2 ${
+        active ? "text-blue-600" : "text-gray-700"
+      }`}
     >
       <div
-        className={`w-10 h-10 rounded-lg flex items-center justify-center
-          ${
-            active
-              ? "bg-blue-50 text-blue-600"
-              : "bg-gray-100 text-gray-600"
-          }
-          hover:bg-blue-50`}
+        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+          active ? "bg-blue-50" : "bg-gray-100"
+        }`}
       >
-        <FontAwesomeIcon icon={icon} size="sm" />
+        <FontAwesomeIcon icon={icon} />
       </div>
-
-      <span className="text-xs font-medium text-center">
-        {title}
-      </span>
+      <span className="text-xs font-medium">{title}</span>
     </button>
   );
 }
