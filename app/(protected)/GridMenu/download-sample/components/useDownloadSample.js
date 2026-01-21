@@ -9,7 +9,6 @@ export function useDownloadSample() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [isFiltering, setIsFiltering] = useState(false);
 
   /* ================= FILTER STATE ================= */
   const [filters, setFilters] = useState({
@@ -26,11 +25,6 @@ export function useDownloadSample() {
     async (pageNo = 1) => {
       try {
         setLoading(true);
-
-        const hasActiveFilters = Object.values(filters).some(
-          val => val !== ""
-        );
-        setIsFiltering(hasActiveFilters);
 
         const url =
           source === "download"
@@ -57,7 +51,6 @@ export function useDownloadSample() {
                 user_name: item.user_name,
                 user_email: item.user_email,
                 product_name: item.product_name,
-
                 utm: {
                   utm_source: item.utm_source || "-",
                   utm_medium: item.utm_medium || "-",
@@ -66,7 +59,6 @@ export function useDownloadSample() {
                   country: item.country || "-",
                   city: item.city || "-",
                 },
-
                 createdAt: item.createdAt,
                 sample_link: item.sample_link,
               }))
@@ -75,7 +67,6 @@ export function useDownloadSample() {
                 user_name: item.user_name,
                 user_email: item.user_email,
                 product_name: item.product_name,
-
                 utm: {
                   utm_source: item.utm_source || "-",
                   utm_medium: item.utm_medium || "-",
@@ -84,7 +75,6 @@ export function useDownloadSample() {
                   country: item.country || "-",
                   city: item.city || "-",
                 },
-
                 createdAt: item.createdAt,
                 sample_link:
                   item.CategorySampleFile?.sample_link || "-",
@@ -99,14 +89,12 @@ export function useDownloadSample() {
             : res.data?.pagination;
 
         setTotalPages(pagination?.totalPages || 1);
-        setPage(pagination?.page || 1);
         setError("");
       } catch (err) {
         console.error(err);
         setError("Failed to load download samples");
       } finally {
         setLoading(false);
-        setIsFiltering(false);
       }
     },
     [filters, source]
@@ -120,7 +108,7 @@ export function useDownloadSample() {
   /* ================= HANDLERS ================= */
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPage(1);
+    setPage(1); // reset page ONLY here
   };
 
   const handleFilterReset = () => {
@@ -171,7 +159,6 @@ export function useDownloadSample() {
     page,
     setPage,
     totalPages,
-    isFiltering,
     filters,
     fetchDownloads,
     handleFilterChange,
