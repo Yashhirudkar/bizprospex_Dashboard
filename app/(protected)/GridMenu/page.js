@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import GridMenu from "@/app/components/GridMenu";
 
 export default function GridMenuPage() {
@@ -6,4 +8,4 @@ export default function GridMenuPage() {
       <GridMenu />
     </div>
   );
-}
+} 
