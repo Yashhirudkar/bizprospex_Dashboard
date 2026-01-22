@@ -94,9 +94,9 @@ export default function CategoryTable({
               </th>
 
               <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">
-                Category
+                category name
               </th>
-
+ 
               <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">
                 UTM Details
               </th>
@@ -136,6 +136,8 @@ export default function CategoryTable({
               </tr>
             ) : (
               data.map((item, index) => (
+                console.log("ROW ITEM:", item),
+
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                   {/* INDEX */}
                   <td className="px-6 py-4">
@@ -161,14 +163,17 @@ export default function CategoryTable({
                   </td>
 
                   {/* CATEGORY */}
-                  <td className="px-6 py-4 max-w-[240px]  text-gray-600">
-                    <TooltipCell text={item.category_name}>
+               <td className="px-6 py-4 max-w-[240px] text-gray-600">
+                    <TooltipCell text={` ${item.product_name}`}>
                       <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm truncate">
                         <Package size={12} />
-                        {item.category_name}
+                        <span className="truncate">
+                           {item.product_name}
+                        </span>
                       </div>
                     </TooltipCell>
                   </td>
+
 
                   {/* UTM */}
                   <td className="px-6 py-4 text-sm max-w-[260px]  text-gray-600">

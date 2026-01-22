@@ -44,7 +44,9 @@ export function useCategoryDownload() {
             id: item.id,
             user_name: item.user_name,
             user_email: item.user_email,
-            category_name: item.category_name,
+             // ✅ FIX HERE
+            category_name: item.Category?.name || "-",
+            product_name: item.product_name || "-",
             createdAt: item.createdAt,
             utm: {
               utm_source: item.utm_source || "-",
