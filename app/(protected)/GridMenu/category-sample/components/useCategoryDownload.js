@@ -20,22 +20,28 @@ export function useCategoryDownload() {
   });
 
   const fetchDownloads = useCallback(
-    async (pageNo = 1) => {
+    async (pageNo = 1, force = false) => {
       try {
         setLoading(true);
         setIsFiltering(true);
 
-        const res = await axios.get(
+          const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/category/sample-downloads`,
           {
             params: {
               page: pageNo,
               limit: PAGE_LIMIT,
               ...filters,
+              _t: force ? Date.now() : undefined, // 🔥 CACHE BREAKER
+            },
+            headers: {
+              "Cache-Control": "no-store",
+              Pragma: "no-cache",
             },
             withCredentials: true,
           }
         );
+
 
         const rows = res.data?.data || [];
 
