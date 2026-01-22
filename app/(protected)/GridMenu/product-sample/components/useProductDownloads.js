@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import PAGE_LIMIT from "../constants";
 
 export function useProductDownload() {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,59 +19,59 @@ export function useProductDownload() {
     to_date: "",
   });
 
-  const fetchDownloads = useCallback(
-    async (pageNo = 1) => {
-      try {
-        setLoading(true);
-        setIsFiltering(true);
+  // 🔥 SIMPLE + SAFE FETCH (NO useCallback)
+  const fetchDownloads = async (pageNo = 1) => {
+    try {
+      setLoading(true);
+      setIsFiltering(true);
+      setError("");
 
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/Downloadsample`,
-          {
-            params: {
-              page: pageNo,
-              limit: PAGE_LIMIT,
-              ...filters,
-            },
-            withCredentials: true,
-          }
-        );
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/Downloadsample`,
+        {
+          params: {
+            page: pageNo,
+            limit: PAGE_LIMIT,
+            ...filters,
+          },
+          withCredentials: true,
+        }
+      );
 
-        const rows = res.data?.data?.downloads || [];
+      const rows = res.data?.data?.downloads || [];
 
-        setData(
-          rows.map((item) => ({
-            id: item.id,
-            user_name: item.user_name,
-            user_email: item.user_email,
-            product_name: item.product_name,
-            createdAt: item.createdAt,
-            utm: {
-              utm_source: item.utm_source || "-",
-              utm_medium: item.utm_medium || "-",
-              utm_campaign_id: item.utm_campaign_id || "-",
-              adgroup_id: item.adgroup_id || "-",
-              country: item.country || "-",
-              city: item.city || "-",
-            },
-          }))
-        );
+      setData(
+        rows.map((item) => ({
+          id: item.id,
+          user_name: item.user_name,
+          user_email: item.user_email,
+          product_name: item.product_name,
+          createdAt: item.createdAt,
+          utm: {
+            utm_source: item.utm_source || "-",
+            utm_medium: item.utm_medium || "-",
+            utm_campaign_id: item.utm_campaign_id || "-",
+            adgroup_id: item.adgroup_id || "-",
+            country: item.country || "-",
+            city: item.city || "-",
+          },
+        }))
+      );
 
-        setTotalPages(res.data?.data?.totalPages || 1);
-        setError("");
-      } catch (err) {
-        setError("Failed to load product downloads");
-      } finally {
-        setLoading(false);
-        setIsFiltering(false);
-      }
-    },
-    [filters]
-  );
+      setTotalPages(res.data?.data?.totalPages || 1);
+    } catch (err) {
+      setData([]); // 🔥 old data clear
+      setError("Failed to load product downloads");
+    } finally {
+      setLoading(false);
+      setIsFiltering(false);
+    }
+  };
 
+  // 🔥 PAGE + FILTER CHANGE → ALWAYS FETCH LATEST DATA
   useEffect(() => {
     fetchDownloads(page);
-  }, [page, fetchDownloads]);
+  }, [page, filters]); // 👈 MOST IMPORTANT FIX
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

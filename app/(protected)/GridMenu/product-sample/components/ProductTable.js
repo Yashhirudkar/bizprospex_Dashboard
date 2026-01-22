@@ -39,23 +39,14 @@ export default function DataTable({
         throw new Error("Failed to delete record");
       }
 
-      // refresh page
-      fetchDownloads(page);
+      // 🔥 always refresh first page
+      setPage(1);
+      fetchDownloads(1);
     } catch (error) {
       console.error("Delete error:", error);
       alert("Failed to delete the record. Please try again.");
     }
   };
-
-  /* ================= LOADING ================= */
-  if (loading && page === 1) {
-    return (
-      <div className="min-h-[400px] flex flex-col items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p className="text-gray-600">Loading product downloads...</p>
-      </div>
-    );
-  }
 
   /* ================= ERROR ================= */
   if (error) {
@@ -86,22 +77,30 @@ export default function DataTable({
         <table className="w-full border-collapse">
           <thead className="bg-blue-600 text-white sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">#</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">#</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">
                 <div className="flex items-center gap-2">
                   <User size={14} /> User
                 </div>
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">Email</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">Product</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">UTM Details</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">Date</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Email</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Product</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">UTM Details</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Date</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Actions</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-200">
-            {data.length === 0 ? (
+            {/* 🔥 LOADING INSIDE TABLE */}
+            {loading ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-20 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                  <p className="text-gray-600">Loading latest data...</p>
+                </td>
+              </tr>
+            ) : data.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-6 py-16 text-center">
                   <div className="max-w-sm mx-auto">
@@ -111,9 +110,6 @@ export default function DataTable({
                     <h4 className="text-lg font-medium text-gray-900 mb-2">
                       No download records found
                     </h4>
-                    <p className="text-gray-600 mb-6">
-                      Try adjusting your filters to see more results.
-                    </p>
                     <button
                       onClick={() => fetchDownloads(1)}
                       className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -125,32 +121,29 @@ export default function DataTable({
               </tr>
             ) : (
               data.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                  {/* INDEX */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium bg-gray-50 text-gray-700 rounded-lg px-3 py-1 inline-block">
-                      {(page - 1) * PAGE_LIMIT + index + 1}
-                    </div>
+                <tr
+                  key={`${item.id}-${item.createdAt}`} // 🔥 STRONG KEY
+                  className="hover:bg-gray-50 transition-colors text-gray-600"
+                >
+                  <td className="px-6 py-4 text-gray-600">
+                    {(page - 1) * PAGE_LIMIT + index + 1}
                   </td>
 
-                  {/* USER */}
                   <td className="px-6 py-4 max-w-[200px]">
                     <TooltipCell text={item.user_name}>
-                      <span className="font-medium truncate block text-gray-600">
+                      <span className="truncate block text-gray-600">
                         {item.user_name}
                       </span>
                     </TooltipCell>
                   </td>
 
-                  {/* EMAIL */}
-                  <td className="px-6 py-4 text-sm max-w-[220px] text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600">
                     <TooltipCell text={item.user_email}>
                       {item.user_email}
                     </TooltipCell>
                   </td>
 
-                  {/* PRODUCT */}
-                  <td className="px-6 py-4 max-w-[240px]">
+                  <td className="px-6 py-4">
                     <TooltipCell text={item.product_name}>
                       <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm truncate">
                         <Package size={12} />
@@ -159,28 +152,20 @@ export default function DataTable({
                     </TooltipCell>
                   </td>
 
-                  {/* UTM */}
-                  <td className="px-6 py-4 text-sm max-w-[260px] text-gray-600">
+                  <td className="px-6 py-4 text-xs text-gray-600">
                     <TooltipCell text={formatUtmInline(item.utm)}>
-                      <div className="truncate text-xs text-gray-700 text-gray-600">
-                        {formatUtmInline(item.utm)}
-                      </div>
+                      {formatUtmInline(item.utm)}
                     </TooltipCell>
                   </td>
 
-                  {/* DATE */}
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleDateString()
-                      : "-"}
+                    {new Date(item.createdAt).toLocaleDateString()}
                   </td>
 
-                  {/* DELETE */}
                   <td className="px-6 py-4">
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700 "
-                      title="Delete record"
+                      className="text-red-500 hover:text-red-700"
                     >
                       <Trash size={14} />
                     </button>
@@ -193,43 +178,32 @@ export default function DataTable({
       </div>
 
       {/* PAGINATION */}
-     {data.length > 0 && (
-  <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50 text-gray-600">
-    {/* Left text */}
-    <div className="text-sm text-gray-700 whitespace-nowrap">
-      Showing{" "}
-      <span className="font-semibold">
-        {(page - 1) * PAGE_LIMIT + 1}
-      </span>{" "}
-      to{" "}
-      <span className="font-semibold">
-        {Math.min(page * PAGE_LIMIT, (page - 1) * PAGE_LIMIT + data.length)}
-      </span>
-    </div>
+      {data.length > 0 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50 text-gray-600">
+          <span className="text-sm text-gray-700">
+            Showing {(page - 1) * PAGE_LIMIT + 1} to{" "}
+            {Math.min(page * PAGE_LIMIT, (page - 1) * PAGE_LIMIT + data.length)}
+          </span>
 
-    {/* Right buttons */}
-    <div className="flex items-center gap-2 whitespace-nowrap">
-      <button
-        disabled={page === 1}
-        onClick={() => setPage(p => p - 1)}
-        className="flex items-center gap-1 px-4 py-2 border rounded-lg disabled:opacity-50 text-gray-600"
-      >
-        <ChevronLeft size={16} />
-        <span>Previous</span>
-      </button>
+          <div className="flex gap-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="px-4 py-2 border rounded-lg disabled:opacity-50"
+            >
+              <ChevronLeft size={16} />
+            </button>
 
-      <button
-        disabled={page === totalPages}
-        onClick={() => setPage(p => p + 1)}
-        className="flex items-center gap-1 px-4 py-2 border rounded-lg disabled:opacity-50 text-gray-600"
-      >
-        <span>Next</span>
-        <ChevronRight size={16} />
-      </button>
-    </div>
-  </div>
-)}
-
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(p => p + 1)}
+              className="px-4 py-2 border rounded-lg disabled:opacity-50"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
