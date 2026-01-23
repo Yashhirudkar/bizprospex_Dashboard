@@ -1,7 +1,4 @@
   "use client";
-  export const dynamic = "force-dynamic";
-export const revalidate = 0;  
-
 import { Download } from "lucide-react";
 import { useProductDownload } from "./components/useProductDownloads";
 import ProductFilter from "./components/ProductFilter";
