@@ -20,28 +20,28 @@ export function useCategoryDownload() {
   });
 
   const fetchDownloads = useCallback(
-    async (pageNo = 1, force = false) => {
+    async (pageNo = 1, isFilterAction = false) => {
       try {
         setLoading(true);
-        setIsFiltering(true);
+        if (isFilterAction) setIsFiltering(true);
 
-          const res = await axios.get(
+        // 🔹 remove empty filters
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([, v]) => v)
+        );
+
+        const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/category/sample-downloads`,
           {
             params: {
               page: pageNo,
               limit: PAGE_LIMIT,
-              ...filters,
-              _t: force ? Date.now() : undefined, // 🔥 CACHE BREAKER
-            },
-            headers: {
-              "Cache-Control": "no-store",
-              Pragma: "no-cache",
+              ...cleanFilters,
+              _t: isFilterAction ? Date.now() : undefined, // optional cache breaker
             },
             withCredentials: true,
           }
         );
-
 
         const rows = res.data?.data || [];
 
@@ -50,7 +50,6 @@ export function useCategoryDownload() {
             id: item.id,
             user_name: item.user_name,
             user_email: item.user_email,
-             // ✅ FIX HERE
             category_name: item.Category?.name || "-",
             product_name: item.product_name || "-",
             createdAt: item.createdAt,
@@ -68,6 +67,7 @@ export function useCategoryDownload() {
         setTotalPages(res.data?.pagination?.totalPages || 1);
         setError("");
       } catch (err) {
+        console.error(err);
         setError("Failed to load category downloads");
       } finally {
         setLoading(false);
@@ -77,6 +77,7 @@ export function useCategoryDownload() {
     [filters]
   );
 
+  // 🔹 pagination fetch
   useEffect(() => {
     fetchDownloads(page);
   }, [page, fetchDownloads]);
@@ -84,18 +85,22 @@ export function useCategoryDownload() {
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
+    fetchDownloads(1, true);
   };
 
   const handleFilterReset = () => {
-    setFilters({
+    const resetFilters = {
       user_email: "",
       category_name: "",
       utm_source: "",
       utm_campaign: "",
       from_date: "",
       to_date: "",
-    });
+    };
+
+    setFilters(resetFilters);
     setPage(1);
+    fetchDownloads(1, true);
   };
 
   const formatUtmInline = (utm) => {
