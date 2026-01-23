@@ -20,12 +20,11 @@ export function useCategoryDownload() {
   });
 
   const fetchDownloads = useCallback(
-    async (pageNo = 1, isFilterAction = false) => {
+    async (pageNo = 1) => {
       try {
         setLoading(true);
-        if (isFilterAction) setIsFiltering(true);
 
-        // 🔹 remove empty filters
+        // remove empty filters
         const cleanFilters = Object.fromEntries(
           Object.entries(filters).filter(([, v]) => v)
         );
@@ -37,9 +36,9 @@ export function useCategoryDownload() {
               page: pageNo,
               limit: PAGE_LIMIT,
               ...cleanFilters,
-              _t: isFilterAction ? Date.now() : undefined, // optional cache breaker
             },
             withCredentials: true,
+           
           }
         );
 
@@ -77,30 +76,28 @@ export function useCategoryDownload() {
     [filters]
   );
 
-  // 🔹 pagination fetch
+  // fetch on page or filter change
   useEffect(() => {
     fetchDownloads(page);
-  }, [page, fetchDownloads]);
+  }, [page, filters, fetchDownloads]);
 
   const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setIsFiltering(true);
     setPage(1);
-    fetchDownloads(1, true);
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleFilterReset = () => {
-    const resetFilters = {
+    setIsFiltering(true);
+    setPage(1);
+    setFilters({
       user_email: "",
       category_name: "",
       utm_source: "",
       utm_campaign: "",
       from_date: "",
       to_date: "",
-    };
-
-    setFilters(resetFilters);
-    setPage(1);
-    fetchDownloads(1, true);
+    });
   };
 
   const formatUtmInline = (utm) => {
