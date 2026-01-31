@@ -14,7 +14,10 @@ import {
   Globe,
   Eye,
   EyeOff,
-  ChevronDown
+  ChevronDown,
+  AlignLeft,
+  Share2,
+  Type
 } from "lucide-react";
 import { apiUrl } from "../../../../constant/api";
 
@@ -46,8 +49,27 @@ export default function CategorySeoPage() {
     og_title: "",
     og_description: "",
     og_image: "",
+    // 🔵 TWITTER
+  twitter_title: "",
+  twitter_description: "",
+  twitter_image: "",
+  twitter_card: "summary_large_image",
     schema_json: "",
   });
+const StatusRow = ({ label, isSet }) => (
+  <div className="flex justify-between items-center">
+    <span className="text-gray-600">{label}</span>
+    <span
+      className={`px-2 py-1 rounded-full text-xs ${
+        isSet
+          ? "bg-green-100 text-green-700"
+          : "bg-yellow-100 text-yellow-700"
+      }`}
+    >
+      {isSet ? "Set" : "Missing"}
+    </span>
+  </div>
+);
 
   /* ===============================
      AUTO SELECT CATEGORY FROM URL
@@ -113,6 +135,11 @@ export default function CategorySeoPage() {
             og_title: seo.og_title || "",
             og_description: seo.og_description || "",
             og_image: seo.og_image || "",
+            // 🔵 TWITTER
+              twitter_title: seo.twitter_title || "",
+              twitter_description: seo.twitter_description || "",
+              twitter_image: seo.twitter_image || "",
+              twitter_card: seo.twitter_card || "summary_large_image",
             schema_json: seo.schema_json
               ? JSON.stringify(seo.schema_json, null, 2)
               : "",
@@ -258,119 +285,304 @@ export default function CategorySeoPage() {
               )}
               
               {/* Stats */}
-              {selectedCategoryId && (
-                <div className="mt-8 pt-6 border-t border-gray-100">
-                  <h3 className="text-sm font-medium text-gray-700 mb-4">SEO Status</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">SEO Title</span>
-                      <span className={`px-2 py-1 rounded-full text-xs ${form.seo_title ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {form.seo_title ? 'Set' : 'Missing'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Description</span>
-                      <span className={`px-2 py-1 rounded-full text-xs ${form.seo_description ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {form.seo_description ? 'Set' : 'Missing'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Slug</span>
-                      <span className={`px-2 py-1 rounded-full text-xs ${form.slug ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {form.slug ? 'Set' : 'Missing'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
+             {selectedCategoryId && (
+  <div className="mt-8 pt-6 border-t border-gray-100">
+    <h3 className="text-sm font-medium text-gray-700 mb-4">
+      SEO Status
+    </h3>
+
+    <div className="space-y-3">
+
+      {/* SEO TITLE */}
+      <StatusRow
+        label="SEO Title"
+        isSet={!!form.seo_title}
+      />
+
+      {/* SEO DESCRIPTION */}
+      <StatusRow
+        label="Description"
+        isSet={!!form.seo_description}
+      />
+
+      {/* SLUG */}
+      <StatusRow
+        label="Slug"
+        isSet={!!form.slug}
+      />
+
+      {/* OPEN GRAPH */}
+      <StatusRow
+        label="Open Graph"
+        isSet={!!(form.og_title || form.og_description || form.og_image)}
+      />
+
+      {/* TWITTER */}
+      <StatusRow
+        label="Twitter Card"
+        isSet={!!(form.twitter_title || form.twitter_description || form.twitter_image)}
+      />
+
+    </div>
+  </div>
+)}
+
             </div>
           </div>
+
 
           {/* Main Content - SEO Form */}
           <div className="lg:col-span-3">
             {selectedCategoryId ? (
               <div className="space-y-6">
                 {/* Basic SEO Section */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                  <button
-                    onClick={() => toggleSection('basic')}
-                    className="w-full p-6 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <FileText className="w-5 h-5 text-blue-600" />
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('basic')}
+                      className="w-full p-6 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="text-left">
+                          <h3 className="font-semibold text-gray-800 text-lg">Basic SEO</h3>
+                          <p className="text-sm text-gray-500">Title, description, keywords and slug</p>
+                        </div>
                       </div>
-                      <div className="text-left">
-                        <h3 className="font-semibold text-gray-800 text-lg">Basic SEO</h3>
-                        <p className="text-sm text-gray-500">Title, description, keywords and slug</p>
-                      </div>
-                    </div>
-                    <ChevronDown className={`w-5 h-5 text-gray-400 transform transition-transform ${isExpanded.basic ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isExpanded.basic && (
-                    <div className="p-6 space-y-4 animate-fadeIn">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transform transition-transform ${isExpanded.basic ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isExpanded.basic && (
+                      <div className="p-6 space-y-4 animate-fadeIn">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                              <FileText className="w-4 h-4 text-blue-500" />
+                              SEO Title
+                            </label>
+                            <input
+                              name="seo_title"
+                              value={form.seo_title}
+                              onChange={handleChange}
+                              placeholder="Maximum 60 characters recommended"
+                              className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                              <Tag className="w-4 h-4 text-purple-500" />
+                              SEO Keywords
+                            </label>
+                            <input
+                              name="seo_keywords"
+                              value={form.seo_keywords}
+                              onChange={handleChange}
+                              placeholder="keyword1, keyword2, keyword3"
+                              className="w-full border-2 text-black  border-gray-200 rounded-xl px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"
+                            />
+                          </div>
+                        </div>
+
                         <div>
                           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                            <FileText className="w-4 h-4 text-blue-500" />
-                            SEO Title
+                            <FileText className="w-4 h-4 text-green-500" />
+                            SEO Description
                           </label>
-                          <input
-                            name="seo_title"
-                            value={form.seo_title}
+                          <textarea
+                            name="seo_description"
+                            value={form.seo_description}
                             onChange={handleChange}
-                            placeholder="Maximum 60 characters recommended"
-                            className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                            placeholder="Maximum 160 characters recommended"
+                            rows={3}
+                            className="w-full border-2 text-black  border-gray-200 rounded-xl px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
                           />
                         </div>
 
                         <div>
                           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                            <Tag className="w-4 h-4 text-purple-500" />
-                            SEO Keywords
+                            <Link className="w-4 h-4 text-orange-500" />
+                            Category Slug
                           </label>
                           <input
-                            name="seo_keywords"
-                            value={form.seo_keywords}
+                            name="slug"
+                            value={form.slug}
                             onChange={handleChange}
-                            placeholder="keyword1, keyword2, keyword3"
-                            className="w-full border-2 text-black  border-gray-200 rounded-xl px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"
+                            placeholder="category-url-slug"
+                            className="w-full border-2 text-black  border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
                           />
                         </div>
                       </div>
+                    )}
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+  <button
+    onClick={() => toggleSection('social')}
+    className="w-full p-6 flex items-center justify-between bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 transition-all duration-200"
+  >
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-pink-100 rounded-lg">
+        <Share2 className="w-5 h-5 text-pink-600" />
+      </div>
+      <div className="text-left">
+        <h3 className="font-semibold text-gray-800 text-lg">Social Media (OG)</h3>
+        <p className="text-sm text-gray-500">Facebook, Twitter, and LinkedIn appearance</p>
+      </div>
+    </div>
+    <ChevronDown className={`w-5 h-5 text-gray-400 transform transition-transform ${isExpanded.social ? 'rotate-180' : ''}`} />
+  </button>
 
-                      <div>
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                          <FileText className="w-4 h-4 text-green-500" />
-                          SEO Description
-                        </label>
-                        <textarea
-                          name="seo_description"
-                          value={form.seo_description}
-                          onChange={handleChange}
-                          placeholder="Maximum 160 characters recommended"
-                          rows={3}
-                          className="w-full border-2 text-black  border-gray-200 rounded-xl px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
-                        />
-                      </div>
+  {isExpanded.social && (
+    <div className="p-6 space-y-4 animate-fadeIn">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <Type className="w-4 h-4 text-pink-500" />
+            Social Title
+          </label>
+          <input
+            name="og_title"
+            value={form.og_title}
+            onChange={handleChange}
+            placeholder="Title for social sharing"
+            className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-200"
+          />
+        </div>
 
-                      <div>
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                          <Link className="w-4 h-4 text-orange-500" />
-                          Category Slug
-                        </label>
-                        <input
-                          name="slug"
-                          value={form.slug}
-                          onChange={handleChange}
-                          placeholder="category-url-slug"
-                          className="w-full border-2 text-black  border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
-                        />
-                      </div>
+        <div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <Image className="w-4 h-4 text-amber-500" />
+            Social Image URL
+          </label>
+          <input
+            name="og_image"
+            value={form.og_image}
+            onChange={handleChange}
+            placeholder="https://example.com/image.jpg"
+            className="w-full border-2 text-black border-gray-200 rounded-xl px-4 py-3 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all duration-200"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <AlignLeft className="w-4 h-4 text-rose-500" />
+          Social Description
+        </label>
+        <textarea
+          name="og_description"
+          value={form.og_description}
+          onChange={handleChange}
+          placeholder="Brief summary for social cards..."
+          rows={3}
+          className="w-full border-2 text-black border-gray-200 rounded-xl px-4 py-3 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-200"
+        />
+      </div>
+    </div>
+  )}
                     </div>
-                  )}
-                </div>
+
+              {/* Twitter / X SEO */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <button
+                  onClick={() => toggleSection("twitter")}
+                  className="w-full p-6 flex items-center justify-between bg-gradient-to-r from-sky-50 to-blue-50 hover:from-sky-100 hover:to-blue-100 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-sky-100 rounded-lg">
+                      <Type className="w-5 h-5 text-sky-600" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-gray-800 text-lg">
+                        Twitter / X Card
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Twitter title, description & card image
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={`w-5 h-5 text-gray-400 transform transition-transform ${
+                      isExpanded.twitter ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isExpanded.twitter && (
+                  <div className="p-6 space-y-4 animate-fadeIn">
+
+                    {/* Twitter Title */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Type className="w-4 h-4 text-sky-500" />
+                        Twitter Title
+                      </label>
+                      <input
+                        name="twitter_title"
+                        value={form.twitter_title}
+                        onChange={handleChange}
+                        placeholder="Title for Twitter/X (max 70 chars)"
+                        className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200"
+                      />
+                    </div>
+
+                    {/* Twitter Description */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <AlignLeft className="w-4 h-4 text-blue-500" />
+                        Twitter Description
+                      </label>
+                      <textarea
+                        name="twitter_description"
+                        value={form.twitter_description}
+                        onChange={handleChange}
+                        placeholder="Short description for Twitter/X (max 200 chars)"
+                        rows={3}
+                        className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                      />
+                    </div>
+
+                    {/* Twitter Image */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Image className="w-4 h-4 text-indigo-500" />
+                        Twitter Image URL
+                      </label>
+                      <input
+                        name="twitter_image"
+                        value={form.twitter_image}
+                        onChange={handleChange}
+                        placeholder="https://example.com/twitter-image.jpg"
+                        className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Recommended: 1200×628 (summary_large_image)
+                      </p>
+                    </div>
+
+                    {/* Twitter Card Type */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Share2 className="w-4 h-4 text-sky-500" />
+                        Twitter Card Type
+                      </label>
+                      <select
+                        name="twitter_card"
+                        value={form.twitter_card}
+                        onChange={handleChange}
+                        className="w-full border-2 border-gray-200 text-black rounded-xl px-4 py-3 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200"
+                      >
+                        <option value="summary">Summary</option>
+                        <option value="summary_large_image">
+                          Summary Large Image
+                        </option>
+                      </select>
+                    </div>
+
+                  </div>
+                )}
+              </div>
 
                 {/* Technical SEO Section */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -485,18 +697,26 @@ export default function CategorySeoPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
-                        setForm({
-                          slug: "",
-                          seo_title: "",
-                          seo_description: "",
-                          seo_keywords: "",
-                          canonical_url: "",
-                          meta_robots: "index, follow",
-                          og_title: "",
-                          og_description: "",
-                          og_image: "",
-                          schema_json: "",
-                        });
+                       setForm({
+                        slug: "",
+                        seo_title: "",
+                        seo_description: "",
+                        seo_keywords: "",
+                        canonical_url: "",
+                        meta_robots: "index, follow",
+
+                        og_title: "",
+                        og_description: "", 
+                        og_image: "",
+
+                        twitter_title: "",
+                        twitter_description: "",
+                        twitter_image: "",
+                        twitter_card: "summary_large_image",
+
+                        schema_json: "",
+                      });
+
                       }}
                       className="px-6 py-3 border-1 text-gray-500 border-gray-500 text-gray-300 rounded-xl cursor-pointer transition-all duration-200 font-medium"
                     >
