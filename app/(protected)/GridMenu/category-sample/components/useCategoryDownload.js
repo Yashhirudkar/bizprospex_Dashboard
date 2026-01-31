@@ -19,62 +19,70 @@ export function useCategoryDownload() {
     to_date: "",
   });
 
-  const fetchDownloads = useCallback(
-    async (pageNo = 1) => {
-      try {
-        setLoading(true);
+const fetchDownloads = useCallback(
+  async (pageNo = 1) => {
+    try {
+      setLoading(true);
 
-        // remove empty filters
-        const cleanFilters = Object.fromEntries(
-          Object.entries(filters).filter(([, v]) => v)
-        );
+      // ✅ FRONTEND FIX: map user_email → search
+      const cleanFilters = {};
 
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/category/sample-downloads`,
-          {
-            params: {
-              page: pageNo,
-              limit: PAGE_LIMIT,
-              ...cleanFilters,
-            },
-            withCredentials: true,
-           
-          }
-        );
-
-        const rows = res.data?.data || [];
-
-        setData(
-          rows.map((item) => ({
-            id: item.id,
-            user_name: item.user_name,
-            user_email: item.user_email,
-            category_name: item.Category?.name || "-",
-            product_name: item.product_name || "-",
-            createdAt: item.createdAt,
-            utm: {
-              utm_source: item.utm_source || "-",
-              utm_medium: item.utm_medium || "-",
-              utm_campaign_id: item.utm_campaign_id || "-",
-              adgroup_id: item.utm_adgroup || "-",
-              country: item.country || "-",
-              city: item.city || "-",
-            },
-          }))
-        );
-
-        setTotalPages(res.data?.pagination?.totalPages || 1);
-        setError("");
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load category downloads");
-      } finally {
-        setLoading(false);
-        setIsFiltering(false);
+      if (filters.user_email) {
+        cleanFilters.search = filters.user_email;
       }
-    },
-    [filters]
-  );
+
+      // keep existing filters (optional)
+      if (filters.from_date) cleanFilters.from_date = filters.from_date;
+      if (filters.to_date) cleanFilters.to_date = filters.to_date;
+      if (filters.utm_source) cleanFilters.utm_source = filters.utm_source;
+      if (filters.utm_campaign) cleanFilters.utm_campaign = filters.utm_campaign;
+
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/category/sample-downloads`,
+        {
+          params: {
+            page: pageNo,
+            limit: PAGE_LIMIT,
+            ...cleanFilters,
+          },
+          withCredentials: true,
+        }
+      );
+
+      const rows = res.data?.data || [];
+
+      setData(
+        rows.map((item) => ({
+          id: item.id,
+          user_name: item.user_name,
+          user_email: item.user_email,
+          category_name: item.Category?.name || "-",
+          product_name: item.product_name || "-",
+          createdAt: item.createdAt,
+          utm: {
+            utm_source: item.utm_source || "-",
+            utm_medium: item.utm_medium || "-",
+            utm_campaign_id: item.utm_campaign_id || "-",
+            adgroup_id: item.utm_adgroup || "-",
+            country: item.country || "-",
+            city: item.city || "-",
+          },
+        }))
+      );
+
+      setTotalPages(res.data?.pagination?.totalPages || 1);
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load category downloads");
+    } finally {
+      setLoading(false);
+      setIsFiltering(false);
+    }
+  },
+  [filters]
+);
+
 
   // fetch on page or filter change
   useEffect(() => {
