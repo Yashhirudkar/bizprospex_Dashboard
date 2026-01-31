@@ -52,7 +52,7 @@ const TooltipCell = ({
 
       {show && (
         <div
-          className="absolute z-50 bg-gray-900 text-white text-xs rounded-md px-3 py-2
+          className="absolute z-50 bg-gray-500 text-white text-xs rounded-md px-3 py-1
                      max-w-xs break-words shadow-lg select-text
                      -top-2 left-0 translate-y-[-100%]"
         >
