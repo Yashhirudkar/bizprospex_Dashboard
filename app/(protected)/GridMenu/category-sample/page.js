@@ -1,10 +1,12 @@
 "use client";
 
 import { List } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useCategoryDownload } from "./components/useCategoryDownload";
 import CategoryFilter from "./components/CategoryFilter";
 import CategoryTable from "./components/CategoryTable";
 import PAGE_LIMIT from "./constants";
+import { apiUrl } from "@/constant/api.js";
 
 export default function CategorySamplePage() {
   const {
@@ -21,6 +23,62 @@ export default function CategorySamplePage() {
     handleFilterReset,
     formatUtmInline,
   } = useCategoryDownload();
+
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [page, data]);
+
+  const allSelected =
+    data.length > 0 && selectedIds.length === data.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(data.map((d) => d.id));
+    }
+  };
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    if (!confirm(`Delete ${selectedIds.length} records?`)) return;
+
+    try {
+      const res = await fetch(
+        `${apiUrl}/admin/category-sample-downloads`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ ids: selectedIds }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSelectedIds([]);
+        fetchDownloads(page);
+      } else {
+        alert(data.message || "Bulk delete failed");
+      }
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+    }
+  };
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
@@ -51,6 +109,8 @@ export default function CategorySamplePage() {
         onChange={handleFilterChange}
         onReset={handleFilterReset}
         isFiltering={isFiltering}
+        selectedIds={selectedIds}
+        handleBulkDelete={handleBulkDelete}
       />
 
       {/* TABLE */}
@@ -64,6 +124,12 @@ export default function CategorySamplePage() {
         fetchDownloads={fetchDownloads}
         formatUtmInline={formatUtmInline}
         PAGE_LIMIT={PAGE_LIMIT}
+        selectedIds={selectedIds}
+        setSelectedIds={setSelectedIds}
+        toggleSelectAll={toggleSelectAll}
+        toggleSelectOne={toggleSelectOne}
+        allSelected={allSelected}
+        handleBulkDelete={handleBulkDelete}
       />
     </div>
   );

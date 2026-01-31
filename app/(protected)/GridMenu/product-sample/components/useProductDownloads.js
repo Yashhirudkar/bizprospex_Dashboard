@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import PAGE_LIMIT from "../constants";
+import { apiUrl } from "../../../../../constant/api";
 
 export function useProductDownload() {
   const [data, setData] = useState([]);
@@ -27,7 +28,7 @@ export function useProductDownload() {
       setError("");
 
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/Downloadsample`,
+        `${apiUrl}/admin/Downloadsample`,
         {
           params: {
             page: pageNo,

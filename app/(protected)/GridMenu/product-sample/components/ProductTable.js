@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   User,
   Package,
@@ -20,7 +21,10 @@ export default function DataTable({
   fetchDownloads,
   formatUtmInline,
   PAGE_LIMIT,
+  selectedIds,
+  setSelectedIds,
 }) {
+
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this sample download record?")) {
       return;
@@ -47,6 +51,65 @@ export default function DataTable({
       alert("Failed to delete the record. Please try again.");
     }
   };
+
+  const allSelected =
+    data.length > 0 && selectedIds.length === data.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(data.map((d) => d.id));
+    }
+  };
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id]
+    );
+  };
+
+  // const handleBulkDelete = async () => {
+  //   if (selectedIds.length === 0) return;
+
+  //   if (!confirm(`Delete ${selectedIds.length} records?`)) return;
+
+  //   try {
+  //     const res = await fetch(
+  //       `${apiUrl}/admin/Downloadsample/${id}`,
+  //       {
+  //         method: "DELETE",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         credentials: "include",
+  //         body: JSON.stringify({ ids: selectedIds }),
+  //       }
+  //     );
+
+  //     if (!res.ok) {
+  //       throw new Error(`Failed to delete records: ${res.status} ${res.statusText}`);
+  //     }
+
+  //     const data = await res.json();
+
+  //     if (data.success) {
+  //       setSelectedIds([]);
+  //       setPage(1);
+  //       fetchDownloads(1);
+  //     } else {
+  //       alert(data.message || "Bulk delete failed");
+  //     }
+  //   } catch (err) {
+  //     console.error("Bulk delete error:", err);
+  //   }
+  // };
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [page, data]);
 
   /* ================= ERROR ================= */
   if (error) {
@@ -77,6 +140,14 @@ export default function DataTable({
         <table className="w-full border-collapse">
           <thead className="bg-blue-600 text-white sticky top-0 z-10">
             <tr>
+              <th className="px-6 py-4 text-center text-xs font-semibold uppercase">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4"
+                />
+              </th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase">#</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase">
                 <div className="flex items-center gap-2">
@@ -87,7 +158,7 @@ export default function DataTable({
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Product</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase">UTM Details</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Date</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Actions</th>
+              {/* <th className="px-6 py-4 text-left text-xs font-semibold uppercase">Actions</th> */}
             </tr>
           </thead>
 
@@ -95,14 +166,14 @@ export default function DataTable({
             {/* 🔥 LOADING INSIDE TABLE */}
             {loading ? (
               <tr>
-                <td colSpan="7" className="px-6 py-20 text-center">
+                <td colSpan="8" className="px-6 py-20 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
                   <p className="text-gray-600">Loading latest data...</p>
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-16 text-center">
+                <td colSpan="8" className="px-6 py-16 text-center">
                   <div className="max-w-sm mx-auto">
                     <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                       <Download className="text-gray-400" size={24} />
@@ -125,6 +196,14 @@ export default function DataTable({
                   key={`${item.id}-${item.createdAt}`} // 🔥 STRONG KEY
                   className="hover:bg-gray-50 transition-colors text-gray-600"
                 >
+                  <td className="px-6 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={() => toggleSelectOne(item.id)}
+                      className="w-4 h-4"
+                    />
+                  </td>
                   <td className="px-6 py-4 text-gray-600">
                     {(page - 1) * PAGE_LIMIT + index + 1}
                   </td>
@@ -162,14 +241,15 @@ export default function DataTable({
                     {new Date(item.createdAt).toLocaleDateString()}
                   </td>
 
-                  <td className="px-6 py-4">
+                  {/* <td className="px-6 py-4">
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700"
+                      disabled={selectedIds.length > 0}
+                      className="text-red-500 hover:text-red-700 disabled:opacity-40"
                     >
                       <Trash size={14} />
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))
             )}

@@ -1,9 +1,11 @@
   "use client";
+import { useState } from "react";
 import { Download } from "lucide-react";
 import { useProductDownload } from "./components/useProductDownloads";
 import ProductFilter from "./components/ProductFilter";
 import DataTable from "./components/ProductTable";
 import PAGE_LIMIT from "./constants";
+import { apiUrl } from "@/constant/api";
 
 export default function DownloadSamplePage() {
   const {
@@ -20,6 +22,38 @@ export default function DownloadSamplePage() {
     handleFilterReset,
     formatUtmInline,
   } = useProductDownload();
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [tableRef, setTableRef] = useState(null);
+
+
+const handleBulkDelete = async () => {
+  if (selectedIds.length === 0) return;
+  if (!confirm(`Delete ${selectedIds.length} records?`)) return;
+
+  try {
+    const results = await Promise.all(
+      selectedIds.map((id) =>
+        fetch(`${apiUrl}/admin/Downloadsample/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        })
+      )
+    );
+
+    const failed = results.filter((r) => !r.ok);
+    if (failed.length) {
+      throw new Error(`Failed to delete ${failed.length} records`);
+    }
+
+    setSelectedIds([]);
+    setPage(1);
+    fetchDownloads(1);
+  } catch (err) {
+    console.error("Bulk delete error:", err);
+    alert("Delete failed");
+  }
+};
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
@@ -50,6 +84,8 @@ export default function DownloadSamplePage() {
         onChange={handleFilterChange}
         onReset={handleFilterReset}
         isFiltering={isFiltering}
+        selectedIds={selectedIds}
+        onBulkDelete={handleBulkDelete}
       />
 
       {/* TABLE */}
@@ -63,6 +99,8 @@ export default function DownloadSamplePage() {
         fetchDownloads={fetchDownloads}
         formatUtmInline={formatUtmInline}
         PAGE_LIMIT={PAGE_LIMIT}
+        selectedIds={selectedIds}
+        setSelectedIds={setSelectedIds}
       />
     </div>
   );

@@ -5,10 +5,8 @@ import {
   ChevronRight,
   Download,
   BarChart3,
-  Trash,
 } from "lucide-react";
 import TooltipCell from "../../../../components/tooltip.js";
-import { apiUrl } from "@/constant/api.js";
 
 export default function CategoryTable({
   data,
@@ -20,27 +18,13 @@ export default function CategoryTable({
   fetchDownloads,
   formatUtmInline,
   PAGE_LIMIT,
+  selectedIds,
+  setSelectedIds,
+  toggleSelectAll,
+  toggleSelectOne,
+  allSelected,
+  handleBulkDelete,
 }) {
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this category sample record?")) return;
-
-    try {
-      const res = await fetch(
-        `${apiUrl}/admin/category-sample-downloads/${id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!res.ok) throw new Error("Delete failed");
-
-      fetchDownloads(page);
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete record");
-    }
-  };
 
   /* ================= LOADING ================= */
   if (loading && page === 1) {
@@ -81,6 +65,14 @@ export default function CategoryTable({
         <table className="w-full border-collapse">
           <thead className="bg-blue-600 text-white border-b sticky top-0 z-10">
             <tr>
+              <th className="px-6 py-4 text-center text-xs font-semibold uppercase">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4"
+                />
+              </th>
               <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">#</th>
 
               <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">
@@ -105,16 +97,16 @@ export default function CategoryTable({
                 Date
               </th>
 
-              <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">
+              {/* <th className="px-6 py-4 text-left text-xs font-semibold  uppercase">
                 Actions
-              </th>
+              </th> */}
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-200">
             {data.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-16 text-center">
+                <td colSpan="8" className="px-6 py-16 text-center">
                   <div className="max-w-sm mx-auto">
                     <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                       <Download className="text-gray-400" size={24} />
@@ -139,6 +131,15 @@ export default function CategoryTable({
                 console.log("ROW ITEM:", item),
 
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                  {/* CHECKBOX */}
+                  <td className="px-6 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={() => toggleSelectOne(item.id)}
+                      className="w-4 h-4"
+                    />
+                  </td>
                   {/* INDEX */}
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium bg-gray-50 text-gray-700 rounded-lg px-3 py-1 inline-block">
@@ -192,15 +193,16 @@ export default function CategoryTable({
                   </td>
 
                   {/* DELETE */}
-                  <td className="px-6 py-4">
+                  {/* <td className="px-6 py-4">
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700"
+                      disabled={selectedIds.length > 0}
+                      className="text-red-500 hover:text-red-700 disabled:opacity-40"
                       title="Delete record"
                     >
                       <Trash size={14} />
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))
             )}

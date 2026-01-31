@@ -1,12 +1,14 @@
 "use client";
 
-import { Search, Calendar, Filter } from "lucide-react";
+import { Search, Calendar, Filter, Trash } from "lucide-react";
 
 export default function ProductFilter({
   filters,
   onChange,
   onReset,
   isFiltering,
+  selectedIds,
+  onBulkDelete,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 mb-5 border border-gray-200">
@@ -26,12 +28,23 @@ export default function ProductFilter({
           )}
         </div>
 
-        <button
-          onClick={onReset}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          Reset Filters
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={onBulkDelete}
+              className="px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Trash size={16} />
+              Delete Selected ({selectedIds.length})
+            </button>
+          )}
+          <button
+            onClick={onReset}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            Reset Filters
+          </button>
+        </div>
       </div>
 
       {/* FILTER FIELDS */}

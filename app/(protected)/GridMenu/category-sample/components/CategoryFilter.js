@@ -1,12 +1,14 @@
 "use client";
 
-import { Search, Calendar, Filter } from "lucide-react";
+import { Search, Calendar, Filter, Trash } from "lucide-react";
 
 export default function CategoryFilter({
   filters,
   onChange,
   onReset,
   isFiltering,
+  selectedIds,
+  handleBulkDelete,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 mb-5 border border-gray-200">
@@ -25,12 +27,23 @@ export default function CategoryFilter({
           )}
         </div>
 
-        <button
-          onClick={onReset}
-          className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
-        >
-          Reset Filters
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              <Trash size={14} />
+              Delete ({selectedIds.length})
+            </button>
+          )}
+          <button
+            onClick={onReset}
+            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+          >
+            Reset Filters
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

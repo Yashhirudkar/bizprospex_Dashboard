@@ -23,6 +23,8 @@ export default function ContactsList() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [formTypes, setFormTypes] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+
 
   const hasFilters = search || formType || fromDate || toDate;
 
@@ -33,11 +35,32 @@ export default function ContactsList() {
     setToDate("");
     setPage(1);
   };
+
+const allSelected =
+  contacts.length > 0 && selectedIds.length === contacts.length;
+
+const toggleSelectAll = () => {
+  if (allSelected) {
+    setSelectedIds([]);
+  } else {
+    setSelectedIds(contacts.map((c) => c.id));
+  }
+};
+
+const toggleSelectOne = (id) => {
+  setSelectedIds((prev) =>
+    prev.includes(id)
+      ? prev.filter((x) => x !== id)
+      : [...prev, id]
+  );
+};
+
+
 const fetchContacts = async () => {
   try {
     const params = new URLSearchParams({
       page,
-      limit: 20,
+      limit: 10,
       ...(formType && { form_type: formType }),
       ...(search && { search }),
       ...(fromDate && { from_date: fromDate }),
@@ -81,6 +104,11 @@ const fetchContacts = async () => {
     fetchContacts();
   }, [page, formType, search, fromDate, toDate]);
 
+  useEffect(() => {
+  setSelectedIds([]);
+}, [page, formType, search, fromDate, toDate]);
+
+
   /* DELETE CONTACT */
  const handleDelete = async (id) => {
   if (!confirm("Are you sure you want to delete this contact?")) return;
@@ -103,6 +131,37 @@ const fetchContacts = async () => {
     }
   } catch (error) {
     console.error("Delete failed:", error);
+  }
+};
+
+const handleBulkDelete = async () => {
+  if (selectedIds.length === 0) return;
+
+  if (!confirm(`Delete ${selectedIds.length} contacts?`)) return;
+
+  try {
+    const res = await fetch(
+      `${apiUrl}/v1/delete-contact`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ ids: selectedIds }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSelectedIds([]);
+      fetchContacts();
+    } else {
+      alert(data.message || "Bulk delete failed");
+    }
+  } catch (error) {
+    console.error("Bulk delete failed:", error);
   }
 };
 
@@ -212,6 +271,16 @@ const fetchContacts = async () => {
             <Filter className="w-4 h-4" />
             Clear
           </button>
+
+                <button
+          onClick={handleBulkDelete}
+          className="flex items-center  px-2 py-2.5 rounded-md text-sm
+                    bg-red-600 text-white hover:bg-red-700 whitespace-nowrap"
+        >
+          {/* <Trash2 className="w-6 h-6" /> */}
+          Delete ({selectedIds.length})
+        </button>
+
         </div>
       </div>
 
@@ -220,20 +289,37 @@ const fetchContacts = async () => {
         <table className="w-full">
           <thead className="bg-blue-600 text-white">
             <tr>
+              <th className="py-4 px-4 text-center">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4"
+                />
+              </th>
               <th className="py-4 px-6 text-left">Name</th>
               <th className="py-4 px-6 text-left">Email</th>
               <th className="py-4 px-6 text-left">Message</th>
               <th className="py-4 px-6 text-left">Form Type</th>
               <th className="py-4 px-6 text-left">Created</th>
               <th className="py-4 px-6 text-left">UTM Data</th>
-                <th className="py-4 px-6 text-center">Action</th>
+              {/* <th className="py-4 px-6 text-center">Action</th> */}
             </tr>
           </thead>
 
        <tbody className="divide-y divide-gray-300 text-gray-700">
   {contacts.map((c) => (
-    <tr key={c.id} className="hover:bg-gray-50">
-      
+    <tr key={c.id} className={`hover:bg-gray-50 ${selectedIds.includes(c.id) ? "bg-blue-50" : ""}`}>
+      {/* ROW CHECKBOX */}
+      <td className="py-4 px-4 text-center">
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(c.id)}
+          onChange={() => toggleSelectOne(c.id)}
+          className="w-4 h-4"
+        />
+      </td>
+
       {/* NAME */}
       <td className="py-4 px-6 max-w-[180px]">
         <TooltipCell text={c.user_name}>
@@ -295,21 +381,22 @@ const fetchContacts = async () => {
       </td>
 
       {/* ACTION */}
-      <td className="py-4 px-6 text-center">
+      {/* <td className="py-4 px-6 text-center">
         <button
           onClick={() => handleDelete(c.id)}
-          className="p-2 rounded-md text-red-500 hover:bg-red-100"
+          disabled={selectedIds.length > 0}
+          className="p-2 rounded-md text-red-500 hover:bg-red-100 disabled:opacity-40"
           title="Delete contact"
         >
           <Trash2 className="w-4 h-4" />
         </button>
-      </td>
+      </td> */}
     </tr>
   ))}
 
   {contacts.length === 0 && (
     <tr>
-      <td colSpan="7" className="py-10 text-center text-gray-500">
+      <td colSpan="9" className="py-10 text-center text-gray-500">
         No contacts found
       </td>
     </tr>
@@ -330,7 +417,7 @@ const fetchContacts = async () => {
             <button
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-              className="px-4 py-2 border rounded disabled:opacity-50"
+              className="px-4 py-2 border rounded disabled:opacity-50 text-black"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -338,7 +425,7 @@ const fetchContacts = async () => {
             <button
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}
-              className="px-4 py-2 border rounded disabled:opacity-50"
+              className="px-4 py-2 border rounded disabled:opacity-50 text-black"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -4,27 +4,47 @@ const TooltipCell = ({
   children,
   text,
   maxWidth = "max-w-[250px]",
-  autoCloseMs = 900,
+  openDelayMs = 2000,   // open after 2 sec
+  autoCloseMs = 5000,   // auto close
+  leaveDelayMs = 1000,  // 👈 stay 1 sec after mouse leave
 }) => {
   const [show, setShow] = useState(false);
-  const timerRef = useRef(null);
+
+  const openTimerRef = useRef(null);
+  const closeTimerRef = useRef(null);
+  const leaveTimerRef = useRef(null);
 
   if (!text) return "-";
 
   const handleMouseEnter = () => {
-    setShow(true);
+    clearTimeout(openTimerRef.current);
+    clearTimeout(closeTimerRef.current);
+    clearTimeout(leaveTimerRef.current);
 
-    if (timerRef.current) clearTimeout(timerRef.current);
+    openTimerRef.current = setTimeout(() => {
+      setShow(true);
 
-    timerRef.current = setTimeout(() => {
+      closeTimerRef.current = setTimeout(() => {
+        setShow(false);
+      }, autoCloseMs);
+    }, openDelayMs);
+  };
+
+  const handleMouseLeave = () => {
+    clearTimeout(openTimerRef.current);
+    clearTimeout(closeTimerRef.current);
+
+    // 👇 delay hide by 1 second
+    leaveTimerRef.current = setTimeout(() => {
       setShow(false);
-    }, autoCloseMs);
+    }, leaveDelayMs);
   };
 
   return (
     <div
       className={`relative ${maxWidth}`}
       onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="line-clamp-2 truncate cursor-pointer">
         {children || text}
